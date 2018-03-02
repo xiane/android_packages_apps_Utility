@@ -12,45 +12,23 @@ import android.widget.Spinner
 class CpuActivity(private val context: Context, private val TAG: String) : AdapterView.OnItemSelectedListener {
 
     /* Big Cluster */
-    private var SpinnerBigGovernor: Spinner? = null
-    private var BigGovernor: String? = null
-
     private var SpinnerBigFreq: Spinner? = null
     private var BigScalingMaxFreq: String? = null
 
     /* Little Cluster */
-    private var SpinnerLittleGovernor: Spinner? = null
-    private var LittleGovernor: String? = null
-
     private var SpinnerLittleFreq: Spinner? = null
     private var LittleScalingMaxFreq: String? = null
 
     private var cpu: CPU? = null
 
     fun onCreate() {
-        var governor_array: Array<String>
-        var governorAdapter: ArrayAdapter<String>
-
         var frequency_array: Array<String>
         var freqAdapter: ArrayAdapter<String>
 
         /* Big Cluster */
-        /* Governor */
         cpu = CPU.getCPU(TAG, CPU.Cluster.Big)
 
-        SpinnerBigGovernor = (context as Activity).findViewById(R.id.spinner_big_governors) as Spinner
-        governor_array = cpu!!.governor.governors
-
-        governorAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, governor_array)
-        governorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        SpinnerBigGovernor!!.adapter = governorAdapter
-
-        SpinnerBigGovernor!!.onItemSelectedListener = this
-
-        BigGovernor = cpu!!.governor.current
-
-        if (BigGovernor != null)
-            SpinnerBigGovernor!!.setSelection(governorAdapter.getPosition(BigGovernor))
+        setGovernorUI(cpu!!, R.id.spinner_big_governors)
 
         /* Frequency */
         SpinnerBigFreq = context.findViewById(R.id.spinner_big_freq) as Spinner
@@ -70,19 +48,7 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
         /* Little Cluster */
         cpu = CPU.getCPU(TAG, CPU.Cluster.Little)
 
-        SpinnerLittleGovernor = context.findViewById(R.id.spinner_little_governors) as Spinner
-        governor_array = cpu!!.governor.governors
-
-        governorAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, governor_array)
-        governorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        SpinnerLittleGovernor!!.adapter = governorAdapter
-
-        SpinnerLittleGovernor!!.onItemSelectedListener = this
-
-        LittleGovernor = cpu!!.governor.current
-
-        if (LittleGovernor != null)
-            SpinnerLittleGovernor!!.setSelection(governorAdapter.getPosition(LittleGovernor))
+        setGovernorUI(cpu!!, R.id.spinner_little_governors)
 
         /* Frequency */
         SpinnerLittleFreq = context.findViewById(R.id.spinner_little_freq) as Spinner
@@ -98,6 +64,20 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
 
         if (LittleScalingMaxFreq != null)
             SpinnerLittleFreq!!.setSelection(freqAdapter.getPosition(LittleScalingMaxFreq))
+    }
+
+    private fun setGovernorUI(cpu: CPU, ID:Int) {
+        val governorSpinner = (context as Activity).findViewById(ID) as Spinner
+        val governorArray = cpu.governor.governors
+
+        val governorAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, governorArray)
+        governorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        governorSpinner.adapter = governorAdapter
+        governorSpinner.onItemSelectedListener = this
+        val governor = cpu.governor.current
+
+        if (governor != null)
+            governorSpinner.setSelection(governorAdapter.getPosition(governor))
     }
 
     fun onResume() {
