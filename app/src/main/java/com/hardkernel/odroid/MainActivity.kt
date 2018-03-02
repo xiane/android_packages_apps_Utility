@@ -1,5 +1,6 @@
 package com.hardkernel.odroid
 
+import android.annotation.SuppressLint
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -127,14 +128,12 @@ class MainActivity : Activity() {
                         currentVersion = Integer.parseInt(version[3])
                     }
 
-                    if (currentVersion < m_updatePackage!!.buildNumber()) {
-                        updatePckageFromOnline()
-                    } else if (currentVersion > m_updatePackage!!.buildNumber()) {
-                        Toast.makeText(context,
+                    if (currentVersion < m_updatePackage!!.buildNumber) updatePckageFromOnline()
+                    else {
+                        if (currentVersion > m_updatePackage!!.buildNumber) Toast.makeText(context,
                                 "The current installed build number might be wrong",
                                 Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(context,
+                        else Toast.makeText(context,
                                 "Already latest Android image is installed.",
                                 Toast.LENGTH_LONG).show()
                     }
@@ -150,7 +149,7 @@ class MainActivity : Activity() {
         }
     }
 
-
+    @SuppressLint("ApplySharedPref")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -159,7 +158,7 @@ class MainActivity : Activity() {
 
         val url = ServerInfo.read()
         if (url == null)
-            ServerInfo.write(UpdatePackage.remoteUrl())
+            ServerInfo.write(UpdatePackage.remoteUrl)
 
         downloadManager = context!!.getSystemService(
                 Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -174,8 +173,7 @@ class MainActivity : Activity() {
         cpuActivity = CpuActivity(this, TAG)
         cpuActivity!!.onCreate()
 
-        cb_kodi.setOnCheckedChangeListener { buttonView, isChecked ->
-            // TODO Auto-generated method stub
+        cb_kodi.setOnCheckedChangeListener { _, isChecked ->
             val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
             val editor = pref.edit()
             editor.putBoolean("kodi", isChecked)
@@ -204,7 +202,7 @@ class MainActivity : Activity() {
                     if (line.startsWith("setenv led_onoff")) {
                         blueLed = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
 
-                        Log.e(TAG, "blue led : " + blueLed)
+                        Log.e(TAG, "blue led : $blueLed")
                     }
 
                     line = bufferedReader.readLine()
@@ -217,7 +215,7 @@ class MainActivity : Activity() {
 
         } else {
             //default value
-            Log.e(TAG, "Not found " + BOOT_INI)
+            Log.e(TAG, "Not found $BOOT_INI")
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Not found boot.ini")
                     .setMessage("Check and Format Internal FAT storage?")
@@ -296,7 +294,6 @@ class MainActivity : Activity() {
         });
         */
         button_apply_reboot.setOnClickListener {
-            // TODO Auto-generated method stub
             modifyBootIni()
             reboot()
         }
@@ -326,7 +323,6 @@ class MainActivity : Activity() {
         }
 
         radio_portrait.setOnClickListener {
-            // TODO Auto-generated method stub
             radioGroup_degree.visibility = View.VISIBLE
             mDegree = 270
             radio_90.isChecked = false
@@ -334,18 +330,15 @@ class MainActivity : Activity() {
         }
 
         radio_landscape.setOnClickListener {
-            // TODO Auto-generated method stub
             radioGroup_degree.visibility = View.GONE
             mDegree = 0
         }
 
         radio_90.setOnClickListener {
-            // TODO Auto-generated method stub
             mDegree = 90
         }
 
         radio_90.setOnClickListener {
-            // TODO Auto-generated method stub
             mDegree = 270
         }
         button_rotation_apply.setOnClickListener {
@@ -364,7 +357,6 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy()
         unregisterReceiver(mReceiver)
     }
@@ -384,7 +376,7 @@ class MainActivity : Activity() {
 
             line = br.readLine()
             while (line != null) {
-                if (line!!.startsWith("setenv vout_mode")) {
+                if (line.startsWith("setenv vout_mode")) {
                     line = vout_mode
                 }
 
@@ -427,7 +419,6 @@ class MainActivity : Activity() {
     }
 
     override fun onResume() {
-        // TODO Auto-generated method stub
         super.onResume()
 
         cpuActivity!!.onResume()
@@ -448,7 +439,7 @@ class MainActivity : Activity() {
             if (!file!!.exists()) {
                 try {
                     file!!.createNewFile()
-                    write(UpdatePackage.remoteUrl())
+                    write(UpdatePackage.remoteUrl)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -487,7 +478,7 @@ class MainActivity : Activity() {
      * Request to retrive the latest update package version
      */
     fun checkLatestVersion() {
-        val remote = UpdatePackage.remoteUrl()
+        val remote = UpdatePackage.remoteUrl
 
         /* Remove if the same file is exist */
         File(context!!.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
@@ -516,7 +507,7 @@ class MainActivity : Activity() {
                 .setTitle("New update package is found!")
                 .setMessage("Do you want to download new update package?\n" + "It would take a few minutes or hours depends on your network speed.")
                 .setPositiveButton("Download"
-                ) { dialog, whichButton ->
+                ) { _, whichButton ->
                     if (sufficientSpace()) {
                         enqueue = m_updatePackage!!.requestDownload(context!!,
                                 downloadManager!!)
@@ -527,7 +518,6 @@ class MainActivity : Activity() {
     }
 
     fun updatePackageFromStorage() {
-        // TODO Auto-generated method stub
         val intent = Intent()
         intent.action = Intent.ACTION_GET_CONTENT
 
@@ -583,10 +573,8 @@ class MainActivity : Activity() {
         if (available < UpdatePackage.PACKAGE_MAXSIZE) {
             AlertDialog.Builder(this)
                     .setTitle("Check free space")
-                    .setMessage("Insufficient free space!\nAbout " +
-                            UpdatePackage.PACKAGE_MAXSIZE / 1024 / 1024 +
-                            " MBytes free space is required.")
-                    .setPositiveButton(android.R.string.yes) { dialog, which -> finish() }
+                    .setMessage("Insufficient free space!\nAbout ${UpdatePackage.PACKAGE_MAXSIZE / 1024 / 1024} MBytes free space is required.")
+                    .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show()
 
@@ -651,7 +639,7 @@ class MainActivity : Activity() {
                     R.id.shortcut_f10 -> keycode = KeyEvent.KEYCODE_F10
                 }
 
-                val shortcut_pref = "shortcut_f" + (keycode - KeyEvent.KEYCODE_F1 + 1)
+                val shortcut_pref = "shortcut_f${keycode - KeyEvent.KEYCODE_F1 + 1}"
 
                 if (position == 0) {
                     wm.setApplicationShortcut(keycode, null)
@@ -672,7 +660,6 @@ class MainActivity : Activity() {
         shortcut_f8.onItemSelectedListener = listner
         shortcut_f9.onItemSelectedListener = listner
         shortcut_f10.onItemSelectedListener = listner
-
     }
 
     companion object {
@@ -763,12 +750,7 @@ class MainActivity : Activity() {
         fun getAvailableAppList(context: Context?): List<Intent> {
             val pm = context!!.packageManager
             appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            val launchApps = ArrayList<Intent>()
-            for (appInfo in appList!!) {
-                val launchApp = pm.getLaunchIntentForPackage(appInfo.packageName)
-                if (launchApp != null)
-                    launchApps.add(launchApp)
-            }
+            val launchApps = appList!!.mapNotNullTo(ArrayList()) { pm.getLaunchIntentForPackage(it.packageName) }
 
             val home = Intent(Intent.ACTION_MAIN)
             home.`package` = "home"

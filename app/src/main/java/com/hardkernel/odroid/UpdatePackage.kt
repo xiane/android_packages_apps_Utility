@@ -6,12 +6,16 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import android.os.StatFs
 import android.util.Log
 
 internal class UpdatePackage {
     private var m_buildNumber = -1
     private var m_downloadId: Long = -1
+
+    private val HEADER = "updatepackage"
+    private val MODEL = "odroidn1"
+    private val VARIANT = "eng"
+    private val BRANCH = "rk3399_7.1.2_master"
 
     constructor(packageName: String) {
         val s = packageName.split("-".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
@@ -22,29 +26,25 @@ internal class UpdatePackage {
                 s[2] != VARIANT || s[3] != BRANCH)
             return
 
-        setBuildNumber(Integer.parseInt(s[4].split("\\.".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]))
+        buildNumber = Integer.parseInt(s[4].split("\\.".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
     }
 
-    constructor(buildNumber: Int) {
-        setBuildNumber(buildNumber)
-    }
-
-    fun setBuildNumber(buildNumber: Int) {
-        Log.d(TAG, "Build Number is set as " + buildNumber)
-        m_buildNumber = buildNumber
-    }
-
-    fun buildNumber(): Int {
+    var buildNumber: Int
+    get() {
         return m_buildNumber
     }
+    set(value) {
+        Log.d(TAG, "Build Number is set as $value")
+        m_buildNumber = value
+    }
 
-    fun packageName(): String? {
-        return if (m_buildNumber == -1) null else HEADER + "-" + MODEL + "-" + VARIANT + "-" + BRANCH + "-" + Integer.toString(m_buildNumber) + ".zip"
-
+    private val packageName: String?
+    get() {
+        return if (m_buildNumber == -1) null else "$HEADER-$MODEL-$VARIANT-$BRANCH-${Integer.toString(m_buildNumber)}.zip"
     }
 
     fun localUri(context: Context): Uri {
-        return Uri.parse("file://" + getDownloadDir(context) + "/update.zip")
+        return Uri.parse("file://${getDownloadDir(context)}/update.zip")
     }
 
     fun downloadId(): Long {
@@ -55,9 +55,9 @@ internal class UpdatePackage {
      * Request to download update package if necessary
      */
     fun requestDownload(context: Context, dm: DownloadManager): Long {
-        val name = packageName() ?: return 0
+        val name = packageName ?: return 0
 
-        val uri = Uri.parse(remoteUrl() + name)
+        val uri = Uri.parse(remoteUrl + name)
 
         val request = DownloadManager.Request(uri)
         request.setTitle("Downloading new update package")
@@ -67,7 +67,7 @@ internal class UpdatePackage {
         request.setDestinationToSystemCache()
         request.setDestinationUri(localUri(context))
 
-        Log.d(TAG, "Requesting to download " + uri.path + " to " + localUri(context))
+        Log.d(TAG, "Requesting to download ${uri.path} to ${localUri(context)}")
 
         /* Remove if the same file is exist */
         val file = File(localUri(context).path)
@@ -82,11 +82,6 @@ internal class UpdatePackage {
     companion object {
         private val TAG = "UpdatePackage"
 
-        private val HEADER = "updatepackage"
-        private val MODEL = "odroidn1"
-        private val VARIANT = "eng"
-        private val BRANCH = "rk3399_7.1.2_master"
-
         val PACKAGE_MAXSIZE = (500 * 1024 * 1024).toLong()   /* 500MB */
 
         val OFFICAL_SERVER_URL = "https://dn.odroid.com/RK3399/Android/ODROID-N1/"
@@ -98,12 +93,12 @@ internal class UpdatePackage {
             return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         }
 
-        fun remoteUrl(): String {
-            return mRemoteUrl
+        var remoteUrl: String
+        set(url){
+             mRemoteUrl = url
         }
-
-        fun setRemoteUrl(url: String) {
-            mRemoteUrl = url
+        get() {
+            return mRemoteUrl
         }
     }
 }

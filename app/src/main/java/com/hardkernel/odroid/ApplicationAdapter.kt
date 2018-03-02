@@ -2,7 +2,6 @@ package com.hardkernel.odroid
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +12,7 @@ import android.widget.TextView
 
 class ApplicationAdapter(context: Context, resource: Int, private val title: List<String>, private val apps: List<ApplicationInfo>) : ArrayAdapter<*>(context, resource, title) {
 
-    fun getViews(position: Int, parent: ViewGroup): View {
+    private fun getViews(position: Int, parent: ViewGroup): View {
         val inflater = LayoutInflater.from(this.context)
         val layout = inflater.inflate(R.layout.applist_dropdown_item_1line, parent, false)
 

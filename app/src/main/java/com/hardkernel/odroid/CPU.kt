@@ -1,8 +1,8 @@
 package com.hardkernel.odroid
 
-class CPU private constructor(tag: String, internal val cluster: Cluster) {
-    var governor: Governor
-    var frequency: Frequency
+class CPU private constructor(tag: String, cluster: Cluster) {
+    var governor: Governor = Governor(tag, cluster)
+    var frequency: Frequency = Frequency(tag, cluster)
 
     enum class Cluster {
         Big,
@@ -16,32 +16,17 @@ class CPU private constructor(tag: String, internal val cluster: Cluster) {
         }
     }
 
-    init {
-        governor = Governor(tag, cluster)
-        frequency = Frequency(tag, cluster)
-    }
-
     companion object {
-
-        private var cpu_big: CPU? = null
-        private var cpu_little: CPU? = null
+        private lateinit var tag: String
+        private val cpu_big: CPU by lazy { CPU(tag, Cluster.Big) }
+        private val cpu_little: CPU by lazy { CPU(tag, Cluster.Little) }
 
         fun getCPU(tag: String, cluster: Cluster): CPU {
-            var cpu: CPU? = null
-            when (cluster) {
-                CPU.Cluster.Big -> {
-                    if (cpu_big == null)
-                        cpu_big = CPU(tag, cluster)
-                    cpu = cpu_big
-                }
-                CPU.Cluster.Little -> {
-                    if (cpu_little == null)
-                        cpu_little = CPU(tag, cluster)
-                    cpu = cpu_little
-                }
+            this.tag = tag
+            return when (cluster) {
+                CPU.Cluster.Big -> cpu_big
+                CPU.Cluster.Little -> cpu_little
             }
-
-            return cpu!!
         }
     }
 }
