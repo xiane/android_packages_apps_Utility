@@ -2,37 +2,23 @@ package com.hardkernel.odroid
 
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.DataOutputStream
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.OutputStream
-import java.net.URISyntaxException
 import java.util.ArrayList
-import java.util.Timer
-import java.util.TimerTask
 
 import android.app.Activity
-import android.app.ActivityManager.RunningServiceInfo
-import android.app.ActivityManager
 import android.app.AlertDialog
-import android.app.Application
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.ContentUris
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.SharedPreferences.Editor
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -50,33 +36,17 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.Display
-import android.view.View.OnClickListener
-import android.view.Window
 import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.widget.CompoundButton.OnCheckedChangeListener
-import android.widget.EditText
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
 import android.widget.LinearLayout
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : Activity() {
 
-    private var mCBKodi: CheckBox? = null
-
     private var blueLed = "on"
-    private var mCBBlueLed: CheckBox? = null
-
-    private val mCBSelfAdaption: CheckBox? = null
     private val mCBCECSwitch: CheckBox? = null
     private val mCBOneKeyPlay: CheckBox? = null
     private val mCBAutoPowerOn: CheckBox? = null
@@ -87,19 +57,6 @@ class MainActivity : Activity() {
     private val mLLAutoChangeLanguage: LinearLayout? = null
     private val mLLAutoPowerOn: LinearLayout? = null
     private val mLLOneKeyShutdown: LinearLayout? = null
-
-    private var mRadio_portrait: RadioButton? = null
-    private var mRadio_landscape: RadioButton? = null
-
-    private var mRadio_90: RadioButton? = null
-    private var mRadio_270: RadioButton? = null
-
-    private var mRG_degree: RadioGroup? = null
-
-    private var shortcut_f7: Spinner? = null
-    private var shortcut_f8: Spinner? = null
-    private var shortcut_f9: Spinner? = null
-    private var shortcut_f10: Spinner? = null
 
     private var mOrientation: String? = null
     private var mDegree: Int = 0
@@ -217,8 +174,7 @@ class MainActivity : Activity() {
         cpuActivity = CpuActivity(this, TAG)
         cpuActivity!!.onCreate()
 
-        mCBKodi = findViewById(R.id.cb_kodi) as CheckBox
-        mCBKodi!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        cb_kodi.setOnCheckedChangeListener { buttonView, isChecked ->
             // TODO Auto-generated method stub
             val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
             val editor = pref.edit()
@@ -229,9 +185,10 @@ class MainActivity : Activity() {
         val boot_ini = File(BOOT_INI)
         if (boot_ini.exists()) {
             try {
-                var line: String
+                var line: String?
                 val bufferedReader = BufferedReader(FileReader(BOOT_INI))
-                while ((line = bufferedReader.readLine()) != null) {
+                line = bufferedReader.readLine()
+                while (line != null) {
                     if (line.startsWith("setenv bootargs"))
                         break
 
@@ -249,6 +206,8 @@ class MainActivity : Activity() {
 
                         Log.e(TAG, "blue led : " + blueLed)
                     }
+
+                    line = bufferedReader.readLine()
                 }
                 bufferedReader.close()
             } catch (e1: IOException) {
@@ -267,15 +226,14 @@ class MainActivity : Activity() {
                     .setNegativeButton("No", null).show()
         }
 
-        mCBBlueLed = findViewById(R.id.blue_led) as CheckBox
-        mCBBlueLed!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        blue_led.setOnCheckedChangeListener { buttonView, isChecked ->
             blueLed = if (isChecked) "on" else "off"
-            mCBBlueLed!!.setText(if (isChecked) R.string.on else R.string.off)
+            blue_led.setText(if (isChecked) R.string.on else R.string.off)
             modifyBootIni()
         }
 
-        mCBBlueLed!!.isChecked = blueLed == "on"
-        mCBBlueLed!!.setText(if (blueLed == "on") R.string.on else R.string.off)
+        blue_led.isChecked = blueLed == "on"
+        blue_led.setText(if (blueLed == "on") R.string.on else R.string.off)
 
         /*
         mCBSelfAdaption = (CheckBox)findViewById(R.id.cb_selfadaption);
@@ -337,72 +295,60 @@ class MainActivity : Activity() {
             }
         });
         */
-
-        var btn: Button
-
-        btn = findViewById(R.id.button_apply_reboot) as Button
-        btn.setOnClickListener {
+        button_apply_reboot.setOnClickListener {
             // TODO Auto-generated method stub
             modifyBootIni()
             reboot()
         }
 
-        btn = findViewById(R.id.button_check_online_update) as Button
-        btn.setOnClickListener { checkLatestVersion() }
+        button_check_online_update.setOnClickListener { checkLatestVersion() }
 
-        btn = findViewById(R.id.button_package_install_from_storage) as Button
-        btn.setOnClickListener { updatePackageFromStorage() }
+        button_package_install_from_storage.setOnClickListener { updatePackageFromStorage() }
 
         updateActivity = UpdateActivity(this, TAG)
         updateActivity!!.onCreate()
 
-        mRadio_portrait = findViewById(R.id.radio_portrait) as RadioButton
-        mRadio_landscape = findViewById(R.id.radio_landscape) as RadioButton
-        mRadio_90 = findViewById(R.id.radio_90) as RadioButton
-        mRadio_270 = findViewById(R.id.radio_270) as RadioButton
-        mRG_degree = findViewById(R.id.radioGroup_degree) as RadioGroup
         if (mOrientation == "landscape") {
-            mRadio_landscape!!.isChecked = true
-            mRG_degree!!.visibility = View.GONE
+            radio_landscape.isChecked = true
+            radioGroup_degree.visibility = View.GONE
             mDegree = 0
         } else {
-            mRadio_portrait!!.isChecked = true
-            mRG_degree!!.visibility = View.VISIBLE
+            radio_portrait.isChecked = true
+            radioGroup_degree.visibility = View.VISIBLE
         }
 
         if (mDegree == 90) {
-            mRadio_90!!.isChecked = true
-            mRadio_270!!.isChecked = false
+            radio_90.isChecked = true
+            radio_270.isChecked = false
         } else {
-            mRadio_90!!.isChecked = false
-            mRadio_270!!.isChecked = true
+            radio_90.isChecked = false
+            radio_270.isChecked = true
         }
 
-        mRadio_portrait!!.setOnClickListener {
+        radio_portrait.setOnClickListener {
             // TODO Auto-generated method stub
-            mRG_degree!!.visibility = View.VISIBLE
+            radioGroup_degree.visibility = View.VISIBLE
             mDegree = 270
-            mRadio_90!!.isChecked = false
-            mRadio_270!!.isChecked = true
+            radio_90.isChecked = false
+            radio_270.isChecked = true
         }
 
-        mRadio_landscape!!.setOnClickListener {
+        radio_landscape.setOnClickListener {
             // TODO Auto-generated method stub
-            mRG_degree!!.visibility = View.GONE
+            radioGroup_degree.visibility = View.GONE
             mDegree = 0
         }
 
-        mRadio_90!!.setOnClickListener {
+        radio_90.setOnClickListener {
             // TODO Auto-generated method stub
             mDegree = 90
         }
 
-        mRadio_270!!.setOnClickListener {
+        radio_90.setOnClickListener {
             // TODO Auto-generated method stub
             mDegree = 270
         }
-        btn = findViewById(R.id.button_rotation_apply) as Button
-        btn.setOnClickListener {
+        button_rotation_apply.setOnClickListener {
             if (mDegree == 0) {
                 android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
                 android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 0)
@@ -435,7 +381,9 @@ class MainActivity : Activity() {
             val f1 = File(BOOT_INI)
             val fr = FileReader(f1)
             val br = BufferedReader(fr)
-            while ((line = br.readLine()) != null) {
+
+            line = br.readLine()
+            while (line != null) {
                 if (line!!.startsWith("setenv vout_mode")) {
                     line = vout_mode
                 }
@@ -447,6 +395,8 @@ class MainActivity : Activity() {
                 Log.e(TAG, line)
 
                 lines.add(line + "\n")
+
+                line = br.readLine()
             }
             fr.close()
             br.close()
@@ -482,21 +432,9 @@ class MainActivity : Activity() {
 
         cpuActivity!!.onResume()
         val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
-        mCBKodi!!.isChecked = pref.getBoolean("kodi", false)
+        cb_kodi.isChecked = pref.getBoolean("kodi", false)
 
-        if (mRadio_portrait!!.isChecked)
-            mRG_degree!!.visibility = View.VISIBLE
-        else
-            mRG_degree!!.visibility = View.GONE
-
-        //updateHDMISelfAdaption();
-    }
-
-    private fun updateHDMISelfAdaption() {
-        if (mCBSelfAdaption!!.isChecked)
-            mCBSelfAdaption.setText(R.string.on)
-        else
-            mCBSelfAdaption.setText(R.string.off)
+        radioGroup_degree.visibility = if (radio_portrait.isChecked) View.VISIBLE else View.GONE
     }
 
     internal object ServerInfo {
@@ -580,8 +518,8 @@ class MainActivity : Activity() {
                 .setPositiveButton("Download"
                 ) { dialog, whichButton ->
                     if (sufficientSpace()) {
-                        enqueue = m_updatePackage!!.requestDownload(context,
-                                downloadManager)
+                        enqueue = m_updatePackage!!.requestDownload(context!!,
+                                downloadManager!!)
                     }
                 }
                 .setCancelable(true)
@@ -638,7 +576,7 @@ class MainActivity : Activity() {
     }
 
     private fun sufficientSpace(): Boolean {
-        val stat = StatFs(UpdatePackage.getDownloadDir(context)!!.path)
+        val stat = StatFs(UpdatePackage.getDownloadDir(context!!)!!.path)
 
         val available = stat.availableBlocks.toDouble() * stat.blockSize.toDouble()
 
@@ -679,11 +617,6 @@ class MainActivity : Activity() {
         val pkg_f9 = pref.getString("shortcut_f9", null)
         val pkg_f10 = pref.getString("shortcut_f10", null)
 
-        shortcut_f7 = findViewById(R.id.shortcut_f7) as Spinner
-        shortcut_f8 = findViewById(R.id.shortcut_f8) as Spinner
-        shortcut_f9 = findViewById(R.id.shortcut_f9) as Spinner
-        shortcut_f10 = findViewById(R.id.shortcut_f10) as Spinner
-
         val appIntentList = getAvailableAppList(context)
         val appTitles = ArrayList<String>()
 
@@ -692,18 +625,18 @@ class MainActivity : Activity() {
             appTitles.add(intent.`package`)
         }
 
-        val adapter = ApplicationAdapter(this, R.layout.applist_dropdown_item_1line, appTitles, appList)
+        val adapter = ApplicationAdapter(this, R.layout.applist_dropdown_item_1line, appTitles, appList!!)
         adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
 
-        shortcut_f7!!.adapter = adapter
-        shortcut_f8!!.adapter = adapter
-        shortcut_f9!!.adapter = adapter
-        shortcut_f10!!.adapter = adapter
+        shortcut_f7.adapter = adapter
+        shortcut_f8.adapter = adapter
+        shortcut_f9.adapter = adapter
+        shortcut_f10.adapter = adapter
 
-        shortcut_f7!!.setSelection(appTitles.indexOf(pkg_f7))
-        shortcut_f8!!.setSelection(appTitles.indexOf(pkg_f8))
-        shortcut_f9!!.setSelection(appTitles.indexOf(pkg_f9))
-        shortcut_f10!!.setSelection(appTitles.indexOf(pkg_f10))
+        shortcut_f7.setSelection(appTitles.indexOf(pkg_f7))
+        shortcut_f8.setSelection(appTitles.indexOf(pkg_f8))
+        shortcut_f9.setSelection(appTitles.indexOf(pkg_f9))
+        shortcut_f10.setSelection(appTitles.indexOf(pkg_f10))
 
         val listner = object : OnItemSelectedListener {
 
@@ -735,10 +668,10 @@ class MainActivity : Activity() {
             }
         }
 
-        shortcut_f7!!.onItemSelectedListener = listner
-        shortcut_f8!!.onItemSelectedListener = listner
-        shortcut_f9!!.onItemSelectedListener = listner
-        shortcut_f10!!.onItemSelectedListener = listner
+        shortcut_f7.onItemSelectedListener = listner
+        shortcut_f8.onItemSelectedListener = listner
+        shortcut_f9.onItemSelectedListener = listner
+        shortcut_f10.onItemSelectedListener = listner
 
     }
 

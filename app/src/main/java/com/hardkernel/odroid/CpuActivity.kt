@@ -2,30 +2,30 @@ package com.hardkernel.odroid
 
 import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import kotlinx.android.synthetic.main.activity_main.*
 
 class CpuActivity(private val context: Context, private val TAG: String) : AdapterView.OnItemSelectedListener {
     private var cpu: CPU? = null
 
     fun onCreate() {
+        (context as Activity).setContentView(R.layout.activity_main)
         cpu = CPU.getCPU(TAG, CPU.Cluster.Big)
 
-        setGovernorUI(cpu!!, R.id.spinner_big_governors)
-        setFrequencyUI(cpu!!, R.id.spinner_big_freq)
+        setGovernorUI(cpu!!, context.spinner_big_governors)
+        setFrequencyUI(cpu!!, context.spinner_big_freq)
 
         cpu = CPU.getCPU(TAG, CPU.Cluster.Little)
 
-        setGovernorUI(cpu!!, R.id.spinner_little_governors)
-        setFrequencyUI(cpu!!, R.id.spinner_little_freq)
+        setGovernorUI(cpu!!, context.spinner_little_governors)
+        setFrequencyUI(cpu!!, context.spinner_little_freq)
     }
 
-    private fun setGovernorUI(cpu: CPU, ID:Int) {
-        val governorSpinner = (context as Activity).findViewById(ID) as Spinner
+    private fun setGovernorUI(cpu: CPU, governorSpinner:Spinner) {
         val governorArray = cpu.governor.governors
 
         val governorAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, governorArray)
@@ -38,8 +38,7 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
             governorSpinner.setSelection(governorAdapter.getPosition(governor))
     }
 
-    private fun setFrequencyUI(cpu: CPU, ID: Int) {
-        val freqSpinner = (context as Activity).findViewById(ID) as Spinner
+    private fun setFrequencyUI(cpu: CPU, freqSpinner:Spinner) {
         val frequencyArray = cpu.frequency.frequencies
 
         val freqAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, frequencyArray)
