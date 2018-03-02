@@ -20,8 +20,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
             var governor: String? = null
             try {
                 val fileReader = when (cluster) {
-                    Cluster.Big -> FileReader(BIG_GOVERNOR_NODE)
-                    Cluster.Little -> FileReader(LITTLE_GOVERNOR_NODE)
+                    Cluster.Big -> FileReader(SystemNode.bigGovernor)
+                    Cluster.Little -> FileReader(SystemNode.littleGovernor)
                 }
 
                 val bufferedReader = BufferedReader(fileReader)
@@ -40,8 +40,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
             var availableGovernors: String? = null
             try {
                 val fileReader = when (cluster) {
-                    Cluster.Big -> FileReader(BIG_SCALING_AVAILABLE_GOVERNORS)
-                    Cluster.Little -> FileReader(LITTLE_SCALING_AVAILABLE_GOVERNORS)
+                    Cluster.Big -> FileReader(SystemNode.bigAvailableGovernors)
+                    Cluster.Little -> FileReader(SystemNode.littleAvailableGovernors)
                 }
 
                 val bufferedReader = BufferedReader(fileReader)
@@ -58,8 +58,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
     fun set(governor: String) {
         try {
             val fileWriter = when (cluster) {
-                Cluster.Big -> FileWriter(BIG_GOVERNOR_NODE)
-                Cluster.Little -> FileWriter(LITTLE_GOVERNOR_NODE)
+                Cluster.Big -> FileWriter(SystemNode.bigGovernor)
+                Cluster.Little -> FileWriter(SystemNode.littleGovernor)
             }
 
             val out = BufferedWriter(fileWriter)
@@ -70,14 +70,5 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    companion object {
-        /* big Cluster */
-        private val BIG_GOVERNOR_NODE = "/sys/devices/system/cpu/cpufreq/policy4/scaling_governor"
-        private val BIG_SCALING_AVAILABLE_GOVERNORS = "/sys/devices/system/cpu/cpufreq/policy4/scaling_available_governors"
-        /* little Cluster */
-        private val LITTLE_GOVERNOR_NODE = "/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
-        private val LITTLE_SCALING_AVAILABLE_GOVERNORS = "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors"
     }
 }
