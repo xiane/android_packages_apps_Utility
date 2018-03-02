@@ -9,12 +9,16 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
 
-class UpdateActivity(private val context: Context, private val TAG: String) : View.OnClickListener {
+class UpdateActivity(private val context: Context, private val TAG: String) {
 
     private var editText: EditText? = null
     private var rbOfficalServer: RadioButton? = null
     private var rbMirrorServer: RadioButton? = null
     private var rbCustomServer: RadioButton? = null
+
+    companion object {
+        private var checkCustomServer = false
+    }
 
     fun onCreate() {
         editText = (context as Activity).findViewById(R.id.edittext) as EditText
@@ -23,12 +27,49 @@ class UpdateActivity(private val context: Context, private val TAG: String) : Vi
         rbMirrorServer = context.findViewById(R.id.rb_mirror_server) as RadioButton
         rbCustomServer = context.findViewById(R.id.rb_custom_server) as RadioButton
 
-        rbOfficalServer!!.setOnClickListener(this)
-        rbMirrorServer!!.setOnClickListener(this)
-        rbCustomServer!!.setOnClickListener(this)
-
+        var url: String
         val btn = context.findViewById(R.id.button_update_url) as Button
-        btn.setOnClickListener(this)
+
+        fun selectServer(server:String, edit:Boolean) {
+            checkCustomServer = edit
+            editText!!.setText(server, TextView.BufferType.NORMAL)
+            editText!!.isEnabled = edit
+
+            btn.isEnabled = edit
+            url = server
+
+            MainActivity.ServerInfo.write(url)
+            UpdatePackage.setRemoteUrl(url)
+        }
+
+        rbOfficalServer!!.setOnClickListener() {
+            selectServer(UpdatePackage.OFFICAL_SERVER_URL, false)
+        }
+        rbMirrorServer!!.setOnClickListener() {
+            selectServer(UpdatePackage.MIRROR_SERVER_URL, false)
+        }
+        rbCustomServer!!.setOnClickListener() {
+            val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
+            selectServer(pref.getString("custom_server", UpdatePackage.MIRROR_SERVER_URL), true)
+        }
+
+        btn.setOnClickListener() {
+            url = editText!!.text.toString()
+
+            val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
+            val editor = pref.edit()
+
+            if (checkCustomServer) {
+                editor.putString("custom_server", url)
+                editor.putBoolean("custom_server_rb", true)
+            } else {
+                editor.putBoolean("custom_server_rb", false)
+            }
+            editor.commit()
+
+            MainActivity.ServerInfo.write(url)
+            UpdatePackage.setRemoteUrl(url)
+        }
 
         val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
         checkCustomServer = pref.getBoolean("custom_server_rb", false)
@@ -43,73 +84,5 @@ class UpdateActivity(private val context: Context, private val TAG: String) : Vi
             editText!!.setText(UpdatePackage.remoteUrl(), TextView.BufferType.EDITABLE)
             editText!!.isEnabled = false
         }
-    }
-
-    override fun onClick(v: View) {
-        var url = String()
-        when (v.id) {
-            R.id.rb_offical_server -> {
-                checkCustomServer = false
-
-                editText!!.setText(UpdatePackage.OFFICAL_SERVER_URL,
-                        TextView.BufferType.NORMAL)
-                editText!!.isEnabled = false
-
-                val btn = (context as Activity).findViewById(R.id.button_update_url) as Button
-                btn.isEnabled = false
-
-                url = UpdatePackage.OFFICAL_SERVER_URL
-            }
-            R.id.rb_mirror_server -> {
-                checkCustomServer = false
-
-                editText!!.setText(UpdatePackage.MIRROR_SERVER_URL,
-                        TextView.BufferType.NORMAL)
-                editText!!.isEnabled = false
-
-                val btn = (context as Activity).findViewById(R.id.button_update_url) as Button
-                btn.isEnabled = false
-
-                url = UpdatePackage.MIRROR_SERVER_URL
-            }
-            R.id.rb_custom_server -> {
-                checkCustomServer = true
-
-                val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
-                editText!!.setText(pref.getString("custom_server",
-                        UpdatePackage.MIRROR_SERVER_URL),
-                        TextView.BufferType.EDITABLE)
-                editText!!.isEnabled = true
-
-                val btn = (context as Activity).findViewById(R.id.button_update_url) as Button
-                btn.isEnabled = true
-
-                url = editText!!.text.toString()
-            }
-            R.id.button_update_url -> {
-                url = editText!!.text.toString()
-
-                val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
-                val editor = pref.edit()
-
-                if (checkCustomServer) {
-                    editor.putString("custom_server", url)
-                    editor.putBoolean("custom_server_rb", true)
-                } else {
-                    editor.putBoolean("custom_server_rb", false)
-                }
-                editor.commit()
-            }
-            else -> {
-            }
-        }
-
-        MainActivity.ServerInfo.write(url)
-        UpdatePackage.setRemoteUrl(url)
-    }
-
-    companion object {
-
-        private var checkCustomServer = false
     }
 }
