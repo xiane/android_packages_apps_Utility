@@ -57,47 +57,33 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
     }
 
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val governor: String
-        val freq: String
-
         val pref = context.getSharedPreferences("utility", context.MODE_PRIVATE)
         val editor = pref.edit()
 
+        fun setGovernor(cluster: CPU.Cluster) {
+            val governor = parent.getItemAtPosition(position).toString()
+            Log.e(TAG, "${cluster.toString()} cluster governor = $governor")
+
+            cpu = CPU.getCPU(TAG, cluster)
+            cpu!!.governor.set(governor)
+            editor.putString("${cluster.toString()}_governor", governor)
+        }
+
+        fun setFrequency(cluster: CPU.Cluster) {
+            val freq = parent.getItemAtPosition(position).toString()
+            Log.e(TAG, "${cluster.toString()} cluster freq = $freq")
+
+            cpu = CPU.getCPU(TAG, cluster)
+            cpu!!.frequency.setScalingMax(freq)
+            editor.putString("${cluster.toString()}_frequency", freq)
+        }
+
         when (parent.id) {
-            R.id.spinner_big_governors -> {
-                governor = parent.getItemAtPosition(position).toString()
-                Log.e(TAG, "big core governor = " + governor)
-
-                cpu = CPU.getCPU(TAG, CPU.Cluster.Big)
-                cpu!!.governor.set(governor)
-                editor.putString("big_governor", governor)
-            }
-            R.id.spinner_little_governors -> {
-                governor = parent.getItemAtPosition(position).toString()
-                Log.e(TAG, "little core governor = " + governor)
-
-                cpu = CPU.getCPU(TAG, CPU.Cluster.Little)
-                cpu!!.governor.set(governor)
-                editor.putString("little_governor", governor)
-            }
-            R.id.spinner_big_freq -> {
-                freq = parent.getItemAtPosition(position).toString()
-                Log.e(TAG, "freq")
-
-                cpu = CPU.getCPU(TAG, CPU.Cluster.Big)
-                cpu!!.frequency.setScalingMax(freq)
-                editor.putString("freq", freq)
-            }
-            R.id.spinner_little_freq -> {
-                freq = parent.getItemAtPosition(position).toString()
-                Log.e(TAG, "freq")
-
-                cpu = CPU.getCPU(TAG, CPU.Cluster.Little)
-                cpu!!.frequency.setScalingMax(freq)
-                editor.putString("freq", freq)
-            }
-            else -> {
-            }
+            R.id.spinner_big_governors -> setGovernor(CPU.Cluster.Big)
+            R.id.spinner_little_governors -> setGovernor(CPU.Cluster.Little)
+            R.id.spinner_big_freq -> setFrequency(CPU.Cluster.Big)
+            R.id.spinner_little_freq -> setFrequency(CPU.Cluster.Little)
+            else -> {}
         }
         editor.commit()
     }

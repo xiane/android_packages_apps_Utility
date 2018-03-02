@@ -6,7 +6,14 @@ class CPU private constructor(tag: String, internal val cluster: Cluster) {
 
     enum class Cluster {
         Big,
-        Little
+        Little;
+
+        override fun toString(): String {
+            return when (this) {
+                Big -> "big"
+                Little -> "little"
+            }
+        }
     }
 
     init {
