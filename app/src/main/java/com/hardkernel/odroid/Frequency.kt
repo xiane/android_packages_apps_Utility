@@ -66,7 +66,7 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
             out.write(freq)
             out.newLine()
             out.close()
-            Log.e(TAG, "set freq : " + freq)
+            Log.e(TAG, "set freq : $freq")
         } catch (e: Exception) {
             e.printStackTrace()
         }

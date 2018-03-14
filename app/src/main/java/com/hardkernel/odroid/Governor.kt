@@ -66,7 +66,7 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
             out.write(governor)
             out.newLine()
             out.close()
-            Log.e(TAG, "set governor : " + governor)
+            Log.e(TAG, "set governor : $governor")
         } catch (e: Exception) {
             e.printStackTrace()
         }
