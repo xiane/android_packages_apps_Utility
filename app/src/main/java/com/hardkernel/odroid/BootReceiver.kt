@@ -51,7 +51,7 @@ class BootReceiver : BroadcastReceiver() {
 
     companion object {
 
-        private val TAG = "ODROIDUtility"
-        private val autoStart = "org.xbmc.kodi"
+        private const val TAG = "ODROIDUtility"
+        private const val autoStart = "org.xbmc.kodi"
     }
 }
