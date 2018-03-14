@@ -10,13 +10,13 @@ import android.view.KeyEvent
 import android.view.WindowManager
 
 class BootReceiver : BroadcastReceiver() {
-    private val cpu_big = CPU.getCPU(TAG, CPU.Cluster.Big)
-    private val cpu_little = CPU.getCPU(TAG, CPU.Cluster.Little)
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
-            cpu_big.governor.set(pref.getString("big_governor", "performance"))
-            cpu_little.governor.set(pref.getString("little_governor", "performance"))
+            CPU.getCPU(TAG, CPU.Cluster.Big)
+                    .governor.set(pref.getString("big_governor", "performance"))
+            CPU.getCPU(TAG, CPU.Cluster.Little)
+                    .governor.set(pref.getString("little_governor", "performance"))
 
             setMouse(pref.getString("mouse", "right"))
 
