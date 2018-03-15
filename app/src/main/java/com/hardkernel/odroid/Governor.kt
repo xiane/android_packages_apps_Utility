@@ -17,43 +17,35 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
 
     val current: String?
         get() {
-            var governor: String? = null
-            try {
-                val fileReader = when (cluster) {
-                    Cluster.Big -> FileReader(SystemNode.bigGovernor)
-                    Cluster.Little -> FileReader(SystemNode.littleGovernor)
-                }
-
-                val bufferedReader = BufferedReader(fileReader)
-                governor = bufferedReader.readLine()
-                bufferedReader.close()
-                Log.e(TAG, "current governor : $governor")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val governor: String? = when (cluster) {
+                Cluster.Big -> getSystemValue(SystemNode.bigGovernor)
+                Cluster.Little -> getSystemValue(SystemNode.littleGovernor)
             }
-
+            Log.e(TAG, "current governor : $governor")
             return governor
         }
 
     private val scaclingAvailable: String?
         get() {
-            var availableGovernors: String? = null
-            try {
-                val fileReader = when (cluster) {
-                    Cluster.Big -> FileReader(SystemNode.bigAvailableGovernors)
-                    Cluster.Little -> FileReader(SystemNode.littleAvailableGovernors)
-                }
-
-                val bufferedReader = BufferedReader(fileReader)
-                availableGovernors = bufferedReader.readLine()
-                bufferedReader.close()
-                Log.e(TAG, "Current available governors : $availableGovernors")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val availableGovernors: String? = when (cluster) {
+                Cluster.Big -> getSystemValue(SystemNode.bigAvailableGovernors)
+                Cluster.Little -> getSystemValue(SystemNode.littleAvailableGovernors)
             }
-
+            Log.e(TAG, "Current available governors : $availableGovernors")
             return availableGovernors
         }
+
+    private fun getSystemValue(node:String): String? {
+        return try {
+            val reader =BufferedReader(FileReader(node))
+            val value = reader.readLine()
+            reader.close()
+            value
+        } catch (e:Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     fun set(governor: String) {
         try {
