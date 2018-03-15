@@ -51,7 +51,7 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
 
     @SuppressLint("ApplySharedPref")
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val pref = context.getSharedPreferences("utility", context.MODE_PRIVATE)
+        val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
         val editor = pref.edit()
 
         fun setGovernor(cluster:Cluster) {
