@@ -1,7 +1,9 @@
 package com.hardkernel.odroid
 
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.FileReader
+import java.io.FileWriter
 
 object SystemNode {
     /* Frequency */
@@ -29,6 +31,17 @@ object SystemNode {
         } catch (e:Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    fun set(node:String, value:String) {
+        try {
+            val writer = BufferedWriter(FileWriter(node))
+            writer.write(value)
+            writer.newLine()
+            writer.close()
+        } catch (e:Exception) {
+            e.printStackTrace()
         }
     }
 }

@@ -1,17 +1,13 @@
 package com.hardkernel.odroid
 
 import android.util.Log
-
-import java.io.BufferedWriter
-import java.io.FileWriter
 import com.hardkernel.odroid.CPU.*
 
 class Frequency(private val TAG: String, private val cluster: Cluster) {
 
     val frequencies: Array<String>
         get() {
-            val availableFrequencies = scalingAvailables
-            return availableFrequencies!!.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+            return scalingAvailables!!.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
         }
 
     val scalingCurrent: String?
@@ -35,19 +31,10 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
         }
 
     fun setScalingMax(freq: String) {
-        try {
-            val fileWriter = when (cluster) {
-                CPU.Cluster.Big -> FileWriter(SystemNode.bigScalingMaxFreq)
-                CPU.Cluster.Little -> FileWriter(SystemNode.littleScalingMaxFreq)
-            }
-
-            val out = BufferedWriter(fileWriter)
-            out.write(freq)
-            out.newLine()
-            out.close()
-            Log.e(TAG, "set freq : $freq")
-        } catch (e: Exception) {
-            e.printStackTrace()
+        when (cluster) {
+            Cluster.Big -> SystemNode.set(SystemNode.bigScalingMaxFreq, freq)
+            Cluster.Little -> SystemNode.set(SystemNode.littleScalingMaxFreq, freq)
         }
+        Log.e(TAG, "set freq : $freq")
     }
 }

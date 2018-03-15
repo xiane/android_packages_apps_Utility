@@ -1,9 +1,6 @@
 package com.hardkernel.odroid
 
 import android.util.Log
-
-import java.io.BufferedWriter
-import java.io.FileWriter
 import com.hardkernel.odroid.CPU.*
 
 class Governor(private val TAG: String, private val cluster: Cluster) {
@@ -34,19 +31,10 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
         }
 
     fun set(governor: String) {
-        try {
-            val fileWriter = when (cluster) {
-                Cluster.Big -> FileWriter(SystemNode.bigGovernor)
-                Cluster.Little -> FileWriter(SystemNode.littleGovernor)
-            }
-
-            val out = BufferedWriter(fileWriter)
-            out.write(governor)
-            out.newLine()
-            out.close()
-            Log.e(TAG, "set governor : $governor")
-        } catch (e: Exception) {
-            e.printStackTrace()
+        when (cluster) {
+            Cluster.Big -> SystemNode.set(SystemNode.bigGovernor, governor)
+            Cluster.Little -> SystemNode.set(SystemNode.littleGovernor, governor)
         }
+        Log.e(TAG, "set governor : $governor")
     }
 }
