@@ -8,54 +8,45 @@ import android.net.Uri
 import android.os.Environment
 import android.util.Log
 
-internal class UpdatePackage {
-    private var m_buildNumber = -1
-    private var m_downloadId: Long = -1
+internal class UpdatePackage(packageName: String) {
+    private val header = "updatepackage"
+    private val model = "odroidn1"
+    private val variant = "eng"
+    private val branch = "rk3399_7.1.2_master"
 
-    private val HEADER = "updatepackage"
-    private val MODEL = "odroidn1"
-    private val VARIANT = "eng"
-    private val BRANCH = "rk3399_7.1.2_master"
+    private var buildNumber = -1
+    private var downloadId: Long = -1
+    private var validPackageName: String? = null
 
-    constructor(packageName: String) {
-        val s = packageName.split("-".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-        if (s.size <= 4)
-            return
-
-        if (s[0] != HEADER || s[1] != MODEL ||
-                s[2] != VARIANT || s[3] != BRANCH)
-            return
-
-        buildNumber = Integer.parseInt(s[4].split("\\.".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+    init {
+        val packageNameChunk = packageName.split("-".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+        if (validatePackageName(packageNameChunk)) {
+            buildNumber = Integer.parseInt(packageNameChunk[4].split("\\.".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+            validPackageName = "$header-$model-$variant-$branch-$buildNumber.zip"
+        }
     }
 
-    var buildNumber: Int
-    get() {
-        return m_buildNumber
-    }
-    set(value) {
-        Log.d(TAG, "Build Number is set as $value")
-        m_buildNumber = value
-    }
-
-    private val packageName: String?
-    get() {
-        return if (m_buildNumber == -1) null else "$HEADER-$MODEL-$VARIANT-$BRANCH-${Integer.toString(m_buildNumber)}.zip"
+    private fun validatePackageName(chunk: Array<String>): Boolean {
+        if (chunk.size <= 4)
+            return false
+        if (chunk[0] != header
+                ||chunk[1] != model
+                || chunk[2] != variant
+                || chunk[3] != branch) {
+            return false
+        }
+        return true
     }
 
     fun localUri(context: Context): Uri {
         return Uri.parse("file://${getDownloadDir(context)}/update.zip")
     }
 
-    fun downloadId(): Long {
-        return m_downloadId
-    }
-
     /*
      * Request to download update package if necessary
      */
     fun requestDownload(context: Context, dm: DownloadManager): Long {
-        val name = packageName ?: return 0
+        val name = validPackageName ?: return 0
 
         val uri = Uri.parse(remoteUrl + name)
 
@@ -74,18 +65,17 @@ internal class UpdatePackage {
         if (file.exists())
             file.delete()
 
-        m_downloadId = dm.enqueue(request)
+        downloadId = dm.enqueue(request)
 
-        return m_downloadId
+        return downloadId
     }
 
     companion object {
-        private val TAG = "UpdatePackage"
+        private const val TAG = "UpdatePackage"
 
-        val PACKAGE_MAXSIZE = (500 * 1024 * 1024).toLong()   /* 500MB */
-
-        val OFFICAL_SERVER_URL = "https://dn.odroid.com/RK3399/Android/ODROID-N1/"
-        val MIRROR_SERVER_URL = "https://www.odroid.in/mirror/dn.odroid.com/RK3399/Android/ODROID-N1/"
+        const val PACKAGE_MAXSIZE = (500 * 1024 * 1024).toLong()   /* 500MB */
+        const val OFFICAL_SERVER_URL = "https://dn.odroid.com/RK3399/Android/ODROID-N1/"
+        const val MIRROR_SERVER_URL = "https://www.odroid.in/mirror/dn.odroid.com/RK3399/Android/ODROID-N1/"
 
         private var mRemoteUrl = MIRROR_SERVER_URL
 
