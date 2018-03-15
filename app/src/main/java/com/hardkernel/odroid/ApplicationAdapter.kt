@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 
-class ApplicationAdapter(context: Context, resource: Int, private val title: List<String>, private val apps: List<ApplicationInfo>) : ArrayAdapter<*>(context, resource, title) {
+class ApplicationAdapter(context: Context, resource: Int, private val title: List<String>, private val apps: List<ApplicationInfo>) : ArrayAdapter<Any>(context, resource, title) {
 
     private fun getViews(position: Int, parent: ViewGroup): View {
         val inflater = LayoutInflater.from(this.context)
