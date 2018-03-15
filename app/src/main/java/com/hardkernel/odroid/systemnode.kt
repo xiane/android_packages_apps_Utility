@@ -1,5 +1,8 @@
 package com.hardkernel.odroid
 
+import java.io.BufferedReader
+import java.io.FileReader
+
 object SystemNode {
     /* Frequency */
     /* Big cluster */
@@ -16,4 +19,16 @@ object SystemNode {
     /* little Cluster */
     const val littleGovernor = "/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
     const val littleAvailableGovernors = "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors"
+
+    fun get(node:String): String? {
+        return try {
+            val reader = BufferedReader(FileReader(node))
+            val value = reader.readLine()
+            reader.close()
+            value
+        } catch (e:Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

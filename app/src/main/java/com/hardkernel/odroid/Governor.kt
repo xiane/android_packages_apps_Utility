@@ -2,9 +2,7 @@ package com.hardkernel.odroid
 
 import android.util.Log
 
-import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.FileReader
 import java.io.FileWriter
 import com.hardkernel.odroid.CPU.*
 
@@ -18,8 +16,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
     val current: String?
         get() {
             val governor: String? = when (cluster) {
-                Cluster.Big -> getSystemValue(SystemNode.bigGovernor)
-                Cluster.Little -> getSystemValue(SystemNode.littleGovernor)
+                Cluster.Big -> SystemNode.get(SystemNode.bigGovernor)
+                Cluster.Little -> SystemNode.get(SystemNode.littleGovernor)
             }
             Log.e(TAG, "current governor : $governor")
             return governor
@@ -28,24 +26,12 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
     private val scaclingAvailable: String?
         get() {
             val availableGovernors: String? = when (cluster) {
-                Cluster.Big -> getSystemValue(SystemNode.bigAvailableGovernors)
-                Cluster.Little -> getSystemValue(SystemNode.littleAvailableGovernors)
+                Cluster.Big -> SystemNode.get(SystemNode.bigAvailableGovernors)
+                Cluster.Little -> SystemNode.get(SystemNode.littleAvailableGovernors)
             }
             Log.e(TAG, "Current available governors : $availableGovernors")
             return availableGovernors
         }
-
-    private fun getSystemValue(node:String): String? {
-        return try {
-            val reader =BufferedReader(FileReader(node))
-            val value = reader.readLine()
-            reader.close()
-            value
-        } catch (e:Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 
     fun set(governor: String) {
         try {

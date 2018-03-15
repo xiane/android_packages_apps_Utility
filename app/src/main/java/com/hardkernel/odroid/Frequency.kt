@@ -2,9 +2,7 @@ package com.hardkernel.odroid
 
 import android.util.Log
 
-import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.FileReader
 import java.io.FileWriter
 import com.hardkernel.odroid.CPU.*
 
@@ -19,8 +17,8 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
     val scalingCurrent: String?
         get() {
             val freq: String? = when (cluster) {
-                Cluster.Big -> getSystemValue(SystemNode.bigScalingMaxFreq)
-                Cluster.Little -> getSystemValue(SystemNode.littleScalingMaxFreq)
+                Cluster.Big -> SystemNode.get(SystemNode.bigScalingMaxFreq)
+                Cluster.Little -> SystemNode.get(SystemNode.littleScalingMaxFreq)
             }
             Log.e(TAG, "Current frequency : $freq")
             return freq
@@ -29,24 +27,12 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
     private val scalingAvailables: String?
         get() {
             val availableFrequencies: String? = when (cluster) {
-                Cluster.Big -> getSystemValue(SystemNode.bigScalingAvailableFreq)
-                Cluster.Little -> getSystemValue(SystemNode.littleScalingAvailableFreq)
+                Cluster.Big -> SystemNode.get(SystemNode.bigScalingAvailableFreq)
+                Cluster.Little -> SystemNode.get(SystemNode.littleScalingAvailableFreq)
             }
             Log.e(TAG, "Available Frequencies : $availableFrequencies")
             return availableFrequencies
         }
-
-    private fun getSystemValue(node:String): String? {
-        return try {
-            val reader =BufferedReader(FileReader(node))
-            val value = reader.readLine()
-            reader.close()
-            value
-        } catch (e:Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 
     fun setScalingMax(freq: String) {
         try {
