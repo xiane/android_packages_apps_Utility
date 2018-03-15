@@ -8,11 +8,11 @@ import java.io.FileWriter
 object SystemNode {
     /* Frequency */
     /* Big cluster */
-    const val bigScalingAvailableFreq = "/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies"
-    const val bigScalingMaxFreq = "/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq"
+    const val bigAvailableFreq = "/sys/devices/system/cpu/cpufreq/policy4/scaling_available_frequencies"
+    const val bigMaxFreq = "/sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq"
     /* Little cluster */
-    const val littleScalingAvailableFreq = "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies"
-    const val littleScalingMaxFreq = "/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"
+    const val littleAvailableFreq = "/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies"
+    const val littleMaxFreq = "/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"
 
     /* Governor */
     /* big Cluster */

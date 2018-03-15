@@ -13,8 +13,8 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
     val scalingCurrent: String?
         get() {
             val freq: String? = when (cluster) {
-                Cluster.Big -> SystemNode.get(SystemNode.bigScalingMaxFreq)
-                Cluster.Little -> SystemNode.get(SystemNode.littleScalingMaxFreq)
+                Cluster.Big -> SystemNode.get(SystemNode.bigMaxFreq)
+                Cluster.Little -> SystemNode.get(SystemNode.littleMaxFreq)
             }
             Log.e(TAG, "Current frequency : $freq")
             return freq
@@ -23,8 +23,8 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
     private val scalingAvailables: String?
         get() {
             val availableFrequencies: String? = when (cluster) {
-                Cluster.Big -> SystemNode.get(SystemNode.bigScalingAvailableFreq)
-                Cluster.Little -> SystemNode.get(SystemNode.littleScalingAvailableFreq)
+                Cluster.Big -> SystemNode.get(SystemNode.bigAvailableFreq)
+                Cluster.Little -> SystemNode.get(SystemNode.littleAvailableFreq)
             }
             Log.e(TAG, "Available Frequencies : $availableFrequencies")
             return availableFrequencies
@@ -32,8 +32,8 @@ class Frequency(private val TAG: String, private val cluster: Cluster) {
 
     fun setScalingMax(freq: String) {
         when (cluster) {
-            Cluster.Big -> SystemNode.set(SystemNode.bigScalingMaxFreq, freq)
-            Cluster.Little -> SystemNode.set(SystemNode.littleScalingMaxFreq, freq)
+            Cluster.Big -> SystemNode.set(SystemNode.bigMaxFreq, freq)
+            Cluster.Little -> SystemNode.set(SystemNode.littleMaxFreq, freq)
         }
         Log.e(TAG, "set freq : $freq")
     }
