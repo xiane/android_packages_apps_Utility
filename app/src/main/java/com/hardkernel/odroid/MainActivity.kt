@@ -547,7 +547,7 @@ class MainActivity : Activity() {
         fun checkBootINI() {
             val boot_ini = File(BOOT_INI)
             if (!boot_ini.exists()) {
-                //SystemProperties.set("ctl.start", "makebootini");
+                SystemProperties.set("ctl.start", "makebootini");
             }
         }
 
