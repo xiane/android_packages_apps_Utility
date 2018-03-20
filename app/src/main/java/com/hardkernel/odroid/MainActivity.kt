@@ -527,14 +527,6 @@ class MainActivity : Activity() {
 
         private val TAG = "ODROIDUtility"
 
-        val WINDOW_AXIS = "/sys/class/graphics/fb0/window_axis"
-        val FREE_SCALE_AXIS = "/sys/class/graphics/fb0/free_scale_axis"
-        val FREE_SCALE = "/sys/class/graphics/fb0/free_scale"
-        val FREE_SCALE_VALUE = "0x10001"
-
-        val DISP_CAP = "/sys/devices/virtual/amhdmitx/amhdmitx0/disp_cap"
-
-        //private final static String BOOT_INI = Environment.getExternalStorageDirectory() + "/boot.ini";
         private val BOOT_INI = "/storage/internal/boot.ini"
 
         private var context: Context? = null
