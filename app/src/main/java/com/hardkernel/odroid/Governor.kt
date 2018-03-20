@@ -7,7 +7,7 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
 
     val governors: Array<String>
         get() {
-            return scaclingAvailable!!.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+            return scalingAvailables!!.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
         }
 
     val current: String?
@@ -20,7 +20,7 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
             return governor
         }
 
-    private val scaclingAvailable: String?
+    private val scalingAvailables: String?
         get() {
             val availableGovernors: String? = when (cluster) {
                 Cluster.Big -> SystemNode.get(SystemNode.bigAvailableGovernors)
