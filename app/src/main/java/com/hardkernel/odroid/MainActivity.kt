@@ -52,17 +52,6 @@ import kotlinx.android.synthetic.main.update_activity.*
 class MainActivity : Activity() {
 
     private var blueLed = "on"
-    private val mCBCECSwitch: CheckBox? = null
-    private val mCBOneKeyPlay: CheckBox? = null
-    private val mCBAutoPowerOn: CheckBox? = null
-    private val mCBAutoChangeLanguage: CheckBox? = null
-    private val mCBOneKeyShutdown: CheckBox? = null
-
-    private val mLLOneKeyPlay: LinearLayout? = null
-    private val mLLAutoChangeLanguage: LinearLayout? = null
-    private val mLLAutoPowerOn: LinearLayout? = null
-    private val mLLOneKeyShutdown: LinearLayout? = null
-
     private var mOrientation: String? = null
     private var mDegree: Int = 0
 
@@ -234,66 +223,6 @@ class MainActivity : Activity() {
         blue_led.isChecked = blueLed == "on"
         blue_led.setText(if (blueLed == "on") R.string.on else R.string.off)
 
-        /*
-        mCBSelfAdaption = (CheckBox)findViewById(R.id.cb_selfadaption);
-        mCBSelfAdaption.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO Auto-generated method stub
-                updateHDMISelfAdaption();
-            }
-        });
-
-        mLLOneKeyPlay = (LinearLayout)findViewById(R.id.layout_one_key_play);
-        mLLAutoChangeLanguage = (LinearLayout)findViewById(R.id.layout_auto_change_language);
-        mLLAutoPowerOn = (LinearLayout)findViewById(R.id.layout_auto_power_on);
-        mLLOneKeyShutdown= (LinearLayout)findViewById(R.id.layout_one_key_shutdown);
-
-        mCBCECSwitch = (CheckBox)findViewById(R.id.cb_cecswitch);
-        mCBCECSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-        mCBOneKeyPlay = (CheckBox)findViewById(R.id.cb_one_key_play);
-        mCBOneKeyPlay.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-        mCBAutoPowerOn = (CheckBox)findViewById(R.id.cb_auto_power_on);
-        mCBAutoPowerOn.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-        mCBAutoChangeLanguage = (CheckBox)findViewById(R.id.cb_auto_change_language);
-        mCBAutoChangeLanguage.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO Auto-generated method stub
-            }
-        });
-
-        mCBOneKeyShutdown = (CheckBox) findViewById(R.id.cb_one_key_shutdown);
-        mCBOneKeyShutdown.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            }
-        });
-        */
         button_apply_reboot.setOnClickListener {
             modifyBootIni()
             reboot()
@@ -680,20 +609,6 @@ class MainActivity : Activity() {
 
         private val LATEST_VERSION = "latestupdate_nougat"
         private val FILE_SELECT_CODE = 0
-
-        //For sharedPreferences
-        private val PREFERENCE_BOX_SETTING = "preference_box_settings"
-        private val SWITCH_ON = "true"
-        private val SWITCH_OFF = "false"
-        private val SWITCH_CEC = "switch_cec"
-        private val SWITCH_ONE_KEY_PLAY = "switch_one_key_play"
-        //private static final String SWITCH_ONE_KEY_POWER_OFF = "switch_one_key_power_off";
-        private val SWITCH_AUTO_POWER_ON = "switch_auto_power_on"
-        private val SWITCH_AUTO_CHANGE_LANGUAGE = "switch_auto_change_languace"
-        private val SWITCH_ONE_KEY_SHUTDOWN = "switch_one_key_shutdown"
-
-        //For start service
-        private val CEC_ACTION = "CEC_LANGUAGE_AUTO_SWITCH"
 
         private var updateActivity: UpdateActivity? = null
 
