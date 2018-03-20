@@ -2,29 +2,31 @@ package com.hardkernel.odroid
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.cpu_activity.*
 import com.hardkernel.odroid.CPU.*
 
-class CpuActivity(private val context: Context, private val TAG: String) : AdapterView.OnItemSelectedListener {
+@SuppressLint("Registered")
+class CpuActivity:Activity(), AdapterView.OnItemSelectedListener {
+    private val tag="ODROIDUtility"
     private lateinit var cpu: CPU
 
-    fun onCreate() {
-        (context as Activity).setContentView(R.layout.activity_main)
-        cpu = CPU.getCPU(TAG, Cluster.Big)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        cpu = CPU.getCPU(tag, Cluster.Big)
 
-        setGovernorUI(cpu, context.spinner_big_governors)
-        setFrequencyUI(cpu, context.spinner_big_freq)
+        setGovernorUI(cpu, spinner_big_governors)
+        setFrequencyUI(cpu, spinner_big_freq)
 
-        cpu = CPU.getCPU(TAG, CPU.Cluster.Little)
+        cpu = CPU.getCPU(tag, CPU.Cluster.Little)
 
-        setGovernorUI(cpu, context.spinner_little_governors)
-        setFrequencyUI(cpu, context.spinner_little_freq)
+        setGovernorUI(cpu, spinner_little_governors)
+        setFrequencyUI(cpu, spinner_little_freq)
     }
 
     private fun setGovernorUI(cpu: CPU, governorSpinner:Spinner) {
@@ -36,7 +38,7 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
     }
 
     private fun Spinner.setSpinner (array: Array<String>, current: String?) {
-        val adapter = ArrayAdapter(this@CpuActivity.context, android.R.layout.simple_spinner_dropdown_item, array)
+        val adapter = ArrayAdapter(this@CpuActivity, android.R.layout.simple_spinner_dropdown_item, array)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         this.adapter = adapter
         onItemSelectedListener = this@CpuActivity
@@ -45,29 +47,25 @@ class CpuActivity(private val context: Context, private val TAG: String) : Adapt
             setSelection(adapter.getPosition(current))
     }
 
-    fun onResume() {
-
-    }
-
     @SuppressLint("ApplySharedPref")
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)
+        val pref = getSharedPreferences("utility", MODE_PRIVATE)
         val editor = pref.edit()
 
         fun setGovernor(cluster:Cluster) {
             val governor = parent.getItemAtPosition(position).toString()
-            Log.e(TAG, "$cluster cluster governor = $governor")
+            Log.e(tag, "$cluster cluster governor = $governor")
 
-            cpu = CPU.getCPU(TAG, cluster)
+            cpu = CPU.getCPU(tag, cluster)
             cpu.governor.set(governor)
             editor.putString("${cluster}_governor", governor)
         }
 
         fun setFrequency(cluster:Cluster) {
             val freq = parent.getItemAtPosition(position).toString()
-            Log.e(TAG, "$cluster cluster freq = $freq")
+            Log.e(tag, "$cluster cluster freq = $freq")
 
-            cpu = CPU.getCPU(TAG, cluster)
+            cpu = CPU.getCPU(tag, cluster)
             cpu.frequency.setScalingMax(freq)
             editor.putString("${cluster}_frequency", freq)
         }

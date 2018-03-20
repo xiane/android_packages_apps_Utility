@@ -174,9 +174,6 @@ class MainActivity : Activity() {
         mDegree = display.rotation * 90
         mOrientation = if (mDegree == 0) "landscape" else "portrait"
 
-        cpuActivity = CpuActivity(this, TAG)
-        cpuActivity!!.onCreate()
-
         cb_kodi.setOnCheckedChangeListener { _, isChecked ->
             val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
             val editor = pref.edit()
@@ -425,7 +422,6 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        cpuActivity!!.onResume()
         val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
         cb_kodi.isChecked = pref.getBoolean("kodi", false)
 
@@ -699,7 +695,6 @@ class MainActivity : Activity() {
         //For start service
         private val CEC_ACTION = "CEC_LANGUAGE_AUTO_SWITCH"
 
-        private var cpuActivity: CpuActivity? = null
         private var updateActivity: UpdateActivity? = null
 
         fun checkBootINI() {
