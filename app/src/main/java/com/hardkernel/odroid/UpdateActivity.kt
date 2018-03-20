@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.update_activity.*
 
 class UpdateActivity(private val context: Context, private val TAG: String) {
     companion object {
