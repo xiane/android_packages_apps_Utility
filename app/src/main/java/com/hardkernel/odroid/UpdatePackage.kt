@@ -14,8 +14,8 @@ internal class UpdatePackage(packageName: String) {
     private val variant = "eng"
     private val branch = "rk3399_7.1.2_master"
 
-    private var buildNumber = -1
-    private var downloadId: Long = -1
+    internal var buildNumber = -1
+    internal var downloadId: Long = -1
     private var validPackageName: String? = null
 
     init {
