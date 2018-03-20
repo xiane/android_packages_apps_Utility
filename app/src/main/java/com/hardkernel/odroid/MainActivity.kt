@@ -44,6 +44,10 @@ import android.widget.CheckBox
 import android.widget.Toast
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.board_activity.*
+import kotlinx.android.synthetic.main.rotation_activity.*
+import kotlinx.android.synthetic.main.shortcut_activity.*
+import kotlinx.android.synthetic.main.update_activity.*
 
 class MainActivity : Activity() {
 
@@ -142,7 +146,7 @@ class MainActivity : Activity() {
                     e.printStackTrace()
                 }
 
-            } else if (id == m_updatePackage!!.downloadId()) {
+            } else if (id == m_updatePackage!!.downloadId) {
                 /* Update package download is done, time to install */
                 installPackage(File(m_updatePackage!!.localUri(context).path))
             }
