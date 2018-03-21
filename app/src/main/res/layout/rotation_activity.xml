@@ -4,6 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:gravity="center_vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".RotateActivity"
     >
     <RadioGroup
         android:id="@+id/radioGroup2"

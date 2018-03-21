@@ -27,7 +27,6 @@ import android.os.StatFs
 import android.os.ServiceManager
 import android.os.IPowerManager
 import android.os.RemoteException
-import android.os.SystemProperties
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.Settings
@@ -38,14 +37,11 @@ import android.widget.Toast
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.board_activity.*
-import kotlinx.android.synthetic.main.rotation_activity.*
 import kotlinx.android.synthetic.main.update_activity.*
 
 class MainActivity : Activity() {
 
     private var blueLed = "on"
-    private var mOrientation: String? = null
-    private var mDegree: Int = 0
 
     private var downloadManager: DownloadManager? = null
     private var enqueue: Long = 0
@@ -149,10 +145,6 @@ class MainActivity : Activity() {
         registerReceiver(mReceiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        val display = windowManager.defaultDisplay
-        mDegree = display.rotation * 90
-        mOrientation = if (mDegree == 0) "landscape" else "portrait"
-
         cb_kodi.setOnCheckedChangeListener { _, isChecked ->
             val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
             val editor = pref.edit()
@@ -192,55 +184,6 @@ class MainActivity : Activity() {
 
         updateActivity = UpdateActivity(this, TAG)
         updateActivity!!.onCreate()
-
-        if (mOrientation == "landscape") {
-            radio_landscape.isChecked = true
-            radioGroup_degree.visibility = View.GONE
-            mDegree = 0
-        } else {
-            radio_portrait.isChecked = true
-            radioGroup_degree.visibility = View.VISIBLE
-        }
-
-        if (mDegree == 90) {
-            radio_90.isChecked = true
-            radio_270.isChecked = false
-        } else {
-            radio_90.isChecked = false
-            radio_270.isChecked = true
-        }
-
-        radio_portrait.setOnClickListener {
-            radioGroup_degree.visibility = View.VISIBLE
-            mDegree = 270
-            radio_90.isChecked = false
-            radio_270.isChecked = true
-        }
-
-        radio_landscape.setOnClickListener {
-            radioGroup_degree.visibility = View.GONE
-            mDegree = 0
-        }
-
-        radio_90.setOnClickListener {
-            mDegree = 90
-        }
-
-        radio_90.setOnClickListener {
-            mDegree = 270
-        }
-        button_rotation_apply.setOnClickListener {
-            if (mDegree == 0) {
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 0)
-            } else if (mDegree == 90) {
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 1)
-            } else if (mDegree == 270) {
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 3)
-            }
-        }
     }
 
     override fun onDestroy() {
@@ -264,8 +207,6 @@ class MainActivity : Activity() {
 
         val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
         cb_kodi.isChecked = pref.getBoolean("kodi", false)
-
-        radioGroup_degree.visibility = if (radio_portrait.isChecked) View.VISIBLE else View.GONE
     }
 
     internal object ServerInfo {
@@ -487,6 +428,5 @@ class MainActivity : Activity() {
         fun isDownloadsDocument(uri: Uri?): Boolean {
             return "com.android.providers.downloads.documents" == uri!!.authority
         }
-
     }
 }
