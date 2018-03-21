@@ -2,7 +2,6 @@ package com.hardkernel.odroid
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -17,7 +16,7 @@ import kotlinx.android.synthetic.main.shortcut_activity.*
 @SuppressLint("Registered")
 class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
 
-    private val appIntentList by lazy { getAvailableAppList(this) }
+    private val appIntentList by lazy { getAvailableAppList() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,8 +85,8 @@ class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
     }
 
     private var appList: List<ApplicationInfo>? = null
-    private fun getAvailableAppList(context: Context?): List<Intent> {
-        val pm = context!!.packageManager
+    private fun getAvailableAppList(): List<Intent> {
+        val pm = packageManager
         appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
         val launchApps = appList!!.mapNotNullTo(ArrayList()) { pm.getLaunchIntentForPackage(it.packageName) }
 
