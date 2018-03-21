@@ -174,9 +174,9 @@ class MainActivity : Activity() {
                         Log.e(TAG, line)
                     }
 
-                    if (line.startsWith("setenv vout_mode")) {
+                    if (line.startsWith("setenv vout")) {
                         Log.e(TAG, line)
-                        val vout_mode = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
+                        val vout = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
                     }
 
                     if (line.startsWith("setenv led_onoff")) {
@@ -281,7 +281,7 @@ class MainActivity : Activity() {
     }
 
     fun modifyBootIni() {
-        val vout_mode = "setenv vout_mode \"hdmi\""
+        val vout = "setenv vout \"hdmi\""
 
         val Blueled = "setenv led_onoff \"" + blueLed + "\""
 
@@ -295,8 +295,8 @@ class MainActivity : Activity() {
 
             line = br.readLine()
             while (line != null) {
-                if (line.startsWith("setenv vout_mode")) {
-                    line = vout_mode
+                if (line.startsWith("setenv vout")) {
+                    line = vout
                 }
 
                 if (line.startsWith("setenv led_onoff")) {
