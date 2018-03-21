@@ -25,7 +25,7 @@ class BootReceiver : BroadcastReceiver() {
                 context.startActivity(context.packageManager
                         .getLaunchIntentForPackage(autoStart))
 
-            MainActivity.checkBootINI()
+            BootINI.check()
         }
 
         val pref = context.getSharedPreferences("utility", Context.MODE_PRIVATE)

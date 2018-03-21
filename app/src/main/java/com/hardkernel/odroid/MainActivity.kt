@@ -160,61 +160,29 @@ class MainActivity : Activity() {
             editor.commit()
         }
 
-        val boot_ini = File(BOOT_INI)
-        if (boot_ini.exists()) {
-            try {
-                var line: String?
-                val bufferedReader = BufferedReader(FileReader(BOOT_INI))
-                line = bufferedReader.readLine()
-                while (line != null) {
-                    if (line.startsWith("setenv bootargs"))
-                        break
-
-                    if (line.startsWith("setenv hdmimode")) {
-                        Log.e(TAG, line)
-                    }
-
-                    if (line.startsWith("setenv vout")) {
-                        Log.e(TAG, line)
-                        val vout = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
-                    }
-
-                    if (line.startsWith("setenv led_onoff")) {
-                        blueLed = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
-
-                        Log.e(TAG, "blue led : $blueLed")
-                    }
-
-                    line = bufferedReader.readLine()
-                }
-                bufferedReader.close()
-            } catch (e1: IOException) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace()
-            }
-
-        } else {
-            //default value
-            Log.e(TAG, "Not found $BOOT_INI")
+        val params = BootINI.getOption {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Not found boot.ini")
                     .setMessage("Check and Format Internal FAT storage?")
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton("Yes") { dialog, which -> startActivity(Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)) }
                     .setNegativeButton("No", null).show()
+
+            return@getOption mapOf("vout" to "hdmi", "blueLed" to "on")
         }
+        blueLed = params["blueLed"]!!
 
         blue_led.setOnCheckedChangeListener { buttonView, isChecked ->
             blueLed = if (isChecked) "on" else "off"
             blue_led.setText(if (isChecked) R.string.on else R.string.off)
-            modifyBootIni()
+            BootINI.modify(mapOf("blueLed" to blueLed))
         }
 
         blue_led.isChecked = blueLed == "on"
         blue_led.setText(if (blueLed == "on") R.string.on else R.string.off)
 
         button_apply_reboot.setOnClickListener {
-            modifyBootIni()
+            BootINI.modify(mapOf("blueLed" to blueLed))
             reboot()
         }
 
@@ -280,51 +248,6 @@ class MainActivity : Activity() {
         unregisterReceiver(mReceiver)
     }
 
-    fun modifyBootIni() {
-        val vout = "setenv vout \"hdmi\""
-
-        val Blueled = "setenv led_onoff \"" + blueLed + "\""
-
-        val lines = ArrayList<String>()
-        var line: String? = null
-
-        try {
-            val f1 = File(BOOT_INI)
-            val fr = FileReader(f1)
-            val br = BufferedReader(fr)
-
-            line = br.readLine()
-            while (line != null) {
-                if (line.startsWith("setenv vout")) {
-                    line = vout
-                }
-
-                if (line.startsWith("setenv led_onoff")) {
-                    line = Blueled
-                }
-
-                Log.e(TAG, line)
-
-                lines.add(line + "\n")
-
-                line = br.readLine()
-            }
-            fr.close()
-            br.close()
-
-            val fw = FileWriter(f1)
-            val out = BufferedWriter(fw)
-            for (s in lines)
-                out.write(s)
-            out.flush()
-            out.close()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-
-        Log.e(TAG, "Update boot.ini")
-    }
-
     private fun reboot() {
         try {
             val pm = IPowerManager.Stub.asInterface(ServiceManager
@@ -334,7 +257,6 @@ class MainActivity : Activity() {
             Log.e(TAG, "PowerManager service died!", e)
             return
         }
-
     }
 
     override fun onResume() {
@@ -518,21 +440,12 @@ class MainActivity : Activity() {
 
         private val TAG = "ODROIDUtility"
 
-        private val BOOT_INI = "/storage/internal/boot.ini"
-
         private var context: Context? = null
 
         private val LATEST_VERSION = "latestupdate_nougat"
         private val FILE_SELECT_CODE = 0
 
         private var updateActivity: UpdateActivity? = null
-
-        fun checkBootINI() {
-            val boot_ini = File(BOOT_INI)
-            if (!boot_ini.exists()) {
-                SystemProperties.set("ctl.start", "makebootini");
-            }
-        }
 
         fun getPath(context: Context?, uri: Uri?): String? {
             val isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
