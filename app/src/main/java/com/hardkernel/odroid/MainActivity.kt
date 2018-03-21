@@ -17,9 +17,6 @@ import android.content.Context
 import android.content.ContentUris
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -35,11 +32,7 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
-import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.CheckBox
 import android.widget.Toast
 import android.widget.LinearLayout
@@ -58,8 +51,6 @@ class MainActivity : Activity() {
     private var enqueue: Long = 0
 
     private var m_updatePackage: UpdatePackage? = null
-
-    private val mSharepreference: SharedPreferences? = null
 
     private val mReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
