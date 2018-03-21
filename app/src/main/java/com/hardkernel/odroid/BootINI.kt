@@ -9,18 +9,34 @@ class BootINI {
     companion object {
         private const val tag = "ODROIDUtility"
         private const val bootINI = "/storage/internal/boot.ini"
+        private lateinit var params:MutableMap<String, String>
 
-        fun getOption(notifier: ()->Map<String,String> ): Map<String, String> {
+        fun get(option:String): String? {
+            return params[option]
+        }
+
+        fun updateOptions(options:Map<String, String>) {
+            options.forEach {option ->
+                if (params.containsKey(option.key) &&
+                        !params[option.key].equals(option.value)) {
+                        params[option.key] = option.value
+                } else params[option.key] = option.value
+            }
+        }
+
+        fun read(notifier: ()->Map<String,String> ){
             val file = File(bootINI)
-            return if (file.exists()) {
-                getOptions(file)
+            val options =  if (file.exists()) {
+                read(file)
             } else {
                 Log.e(tag, "Not found $bootINI")
                 notifier()
             }
+
+            updateOptions(options)
         }
 
-        private fun getOptions(file:File):Map<String, String>{
+        private fun read(file:File):Map<String, String>{
             val reader = file.bufferedReader()
             var vout = ""
             var blueLed = ""
@@ -48,7 +64,7 @@ class BootINI {
             )
         }
 
-        fun modify(params: Map<String, String>) {
+        fun modify() {
             val vout = "setenv vout \"hdmi\""
             val blueled = "setenv led_onoff \"${params["blueLed"]}\""
             val lines = ArrayList<String>()

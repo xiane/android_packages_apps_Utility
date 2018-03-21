@@ -7,7 +7,6 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
-import java.util.ArrayList
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -28,21 +27,13 @@ import android.os.ServiceManager
 import android.os.IPowerManager
 import android.os.RemoteException
 import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
-import android.view.View
-import android.widget.CheckBox
 import android.widget.Toast
-import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.board_activity.*
 import kotlinx.android.synthetic.main.update_activity.*
 
 class MainActivity : Activity() {
-
-    private var blueLed = "on"
-
     private var downloadManager: DownloadManager? = null
     private var enqueue: Long = 0
 
@@ -145,14 +136,7 @@ class MainActivity : Activity() {
         registerReceiver(mReceiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        cb_kodi.setOnCheckedChangeListener { _, isChecked ->
-            val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
-            val editor = pref.edit()
-            editor.putBoolean("kodi", isChecked)
-            editor.commit()
-        }
-
-        val params = BootINI.getOption {
+        BootINI.read {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Not found boot.ini")
                     .setMessage("Check and Format Internal FAT storage?")
@@ -160,21 +144,11 @@ class MainActivity : Activity() {
                     .setPositiveButton("Yes") { dialog, which -> startActivity(Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)) }
                     .setNegativeButton("No", null).show()
 
-            return@getOption mapOf("vout" to "hdmi", "blueLed" to "on")
+            return@read mapOf("vout" to "hdmi", "blueLed" to "on")
         }
-        blueLed = params["blueLed"]!!
-
-        blue_led.setOnCheckedChangeListener { buttonView, isChecked ->
-            blueLed = if (isChecked) "on" else "off"
-            blue_led.setText(if (isChecked) R.string.on else R.string.off)
-            BootINI.modify(mapOf("blueLed" to blueLed))
-        }
-
-        blue_led.isChecked = blueLed == "on"
-        blue_led.setText(if (blueLed == "on") R.string.on else R.string.off)
 
         button_apply_reboot.setOnClickListener {
-            BootINI.modify(mapOf("blueLed" to blueLed))
+            BootINI.modify()
             reboot()
         }
 
@@ -205,8 +179,6 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        val pref = getSharedPreferences("utility", Context.MODE_PRIVATE)
-        cb_kodi.isChecked = pref.getBoolean("kodi", false)
     }
 
     internal object ServerInfo {
