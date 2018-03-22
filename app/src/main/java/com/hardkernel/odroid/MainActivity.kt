@@ -19,8 +19,6 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        context = applicationContext
-
         BootINI.read {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Not found boot.ini")
@@ -38,28 +36,16 @@ class MainActivity : Activity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     private fun reboot() {
         try {
             val pm = IPowerManager.Stub.asInterface(ServiceManager
                     .getService(Context.POWER_SERVICE))
             pm.reboot(false, null, false)
         } catch (e: RemoteException) {
-            Log.e(TAG, "PowerManager service died!", e)
+            Log.e(tag, "PowerManager service died!", e)
             return
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-    }
-
-    companion object {
-        private val TAG = "ODROIDUtility"
-        private var context: Context? = null
-    }
+    private val tag = "ODROIDUtility"
 }
