@@ -2,6 +2,7 @@ package com.hardkernel.odroid
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -16,7 +17,7 @@ import kotlinx.android.synthetic.main.shortcut_activity.*
 @SuppressLint("Registered")
 class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
 
-    private val appIntentList by lazy { getAvailableAppList() }
+    private val appIntentList by lazy { getAvailableAppList(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,17 +86,18 @@ class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
 
     }
 
-    private var appList: List<ApplicationInfo>? = null
-    private fun getAvailableAppList(): List<Intent> {
-        val pm = packageManager
-        appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-        val launchApps = appList!!.mapNotNullTo(ArrayList()) { pm.getLaunchIntentForPackage(it.packageName) }
+    companion object {
+        private var appList: List<ApplicationInfo>? = null
+        fun getAvailableAppList(context: Context): List<Intent> {
+            val pm = context.packageManager
+            appList = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            val launchApps = appList!!.mapNotNullTo(ArrayList()) { pm.getLaunchIntentForPackage(it.packageName) }
 
-        val home = Intent(Intent.ACTION_MAIN)
-        home.`package` = "home"
-        launchApps.add(home)
+            val home = Intent(Intent.ACTION_MAIN)
+            home.`package` = "home"
+            launchApps.add(home)
 
-        return launchApps
+            return launchApps
+        }
     }
-
 }

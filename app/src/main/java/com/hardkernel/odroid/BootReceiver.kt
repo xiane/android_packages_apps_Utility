@@ -34,7 +34,7 @@ class BootReceiver : BroadcastReceiver() {
         for (i in 0..3)
             pkg[i] = pref.getString("shortcut_f" + (i + 7), null)
 
-        val appList = MainActivity.getAvailableAppList(context)
+        val appList = ShortcutActivity.getAvailableAppList(context)
         val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         for (i in 0..3) {
