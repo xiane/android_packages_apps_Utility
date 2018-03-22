@@ -15,16 +15,19 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.update_activity.*
 import java.io.*
 
-class UpdateActivity():Activity() {
+@SuppressLint("Registered")
+class UpdateActivity:Activity() {
     private val tag = "ODROIDUtility"
     private var downloadManager: DownloadManager? = null
     private var enqueue: Long = 0
-    private var m_updatePackage: UpdatePackage? = null
+    private var updatePackage: UpdatePackage? = null
 
     companion object {
         private var checkCustomServer = false
-        private val LATEST_VERSION = "latestupdate_nougat"
-        private val FILE_SELECT_CODE = 0
+        private const val LATEST_VERSION = "latestupdate_nougat"
+        private const val FILE_SELECT_CODE = 0
+        @SuppressLint("StaticFieldLeak")
+        private lateinit var context:Context
 
         fun getPath(context: Context?, uri: Uri?): String? {
             val isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
@@ -42,12 +45,12 @@ class UpdateActivity():Activity() {
             return null
         }
 
-        fun getDataColumn(context: Context?, uri: Uri, selection: String?, selectionArgs: Array<String>?): String? {
+        private fun getDataColumn(context: Context?, uri: Uri, selection: String?, selectionArgs: Array<String>?): String? {
             var cursor: Cursor? = null
             val column = "_data"
             val projection = arrayOf(column)
             try {
-                cursor = (this as Context).contentResolver.query(uri, projection, selection, selectionArgs, null)
+                cursor = context!!.contentResolver.query(uri, projection, selection, selectionArgs, null)
                 if (cursor != null && cursor.moveToFirst()) {
                     val index = cursor.getColumnIndexOrThrow(column)
                     return cursor.getString(index)
@@ -63,7 +66,7 @@ class UpdateActivity():Activity() {
          * @param uri The Uri to check.
          * @return Whether the Uri authority is DownloadsProvider.
          */
-        fun isDownloadsDocument(uri: Uri?): Boolean {
+        private fun isDownloadsDocument(uri: Uri?): Boolean {
             return "com.android.providers.downloads.documents" == uri!!.authority
         }
 
@@ -73,7 +76,7 @@ class UpdateActivity():Activity() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0L)
             if (id != enqueue) {
-                Log.v(tag, "Ingnoring unrelated download " + id)
+                Log.v(tag, "Ingnoring unrelated download $id")
                 return
             }
 
@@ -116,7 +119,7 @@ class UpdateActivity():Activity() {
                     text.append(br.readLine())
                     br.close()
 
-                    m_updatePackage = UpdatePackage(text.toString())
+                    updatePackage = UpdatePackage(text.toString())
 
                     var currentVersion = 0
                     val version = Build.VERSION.INCREMENTAL.split("-".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
@@ -128,9 +131,9 @@ class UpdateActivity():Activity() {
                         currentVersion = Integer.parseInt(version[3])
                     }
 
-                    if (currentVersion < m_updatePackage!!.buildNumber) updatePckageFromOnline()
+                    if (currentVersion < updatePackage!!.buildNumber) updatePckageFromOnline(context)
                     else {
-                        if (currentVersion > m_updatePackage!!.buildNumber) Toast.makeText(context,
+                        if (currentVersion > updatePackage!!.buildNumber) Toast.makeText(context,
                                 "The current installed build number might be wrong",
                                 Toast.LENGTH_LONG).show()
                         else Toast.makeText(context,
@@ -142,9 +145,9 @@ class UpdateActivity():Activity() {
                     e.printStackTrace()
                 }
 
-            } else if (id == m_updatePackage!!.downloadId) {
+            } else if (id == updatePackage!!.downloadId) {
                 /* Update package download is done, time to install */
-                installPackage(File(m_updatePackage!!.localUri(context).path))
+                installPackage(File(updatePackage!!.localUri(context).path))
             }
         }
     }
@@ -153,6 +156,8 @@ class UpdateActivity():Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.update_activity)
+
+        context = applicationContext
 
         val url = ServerInfo.read()
         if (url == null)
@@ -164,25 +169,9 @@ class UpdateActivity():Activity() {
         registerReceiver(mReceiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        button_check_online_update.setOnClickListener { checkLatestVersion() }
+        button_check_online_update.setOnClickListener { checkLatestVersion(this) }
 
         button_package_install_from_storage.setOnClickListener { updatePackageFromStorage() }
-
-
-        val btn = button_update_url
-        val editText = edittext
-
-        fun selectServer(server:String, edit:Boolean) {
-            checkCustomServer = edit
-            editText.setText(server, TextView.BufferType.NORMAL)
-            editText.isEnabled = edit
-
-            btn.isEnabled = edit
-            val url = server
-
-            ServerInfo.write(url)
-            UpdatePackage.remoteUrl =url
-        }
 
         rb_offical_server.setOnClickListener {
             selectServer(
@@ -203,22 +192,22 @@ class UpdateActivity():Activity() {
                     true)
         }
 
-        btn.setOnClickListener {
-            val url = editText.text.toString()
+        button_update_url.setOnClickListener {
+            val serverUrl = edittext.text.toString()
 
             val pref = getSharedPreferences("utility", MODE_PRIVATE)
             val editor = pref.edit()
 
             if (checkCustomServer) {
-                editor.putString("custom_server", url)
+                editor.putString("custom_server", serverUrl)
                 editor.putBoolean("custom_server_rb", true)
             } else {
                 editor.putBoolean("custom_server_rb", false)
             }
             editor.commit()
 
-            ServerInfo.write(url)
-            UpdatePackage.remoteUrl = url
+            ServerInfo.write(serverUrl)
+            UpdatePackage.remoteUrl = serverUrl
         }
 
         val pref = getSharedPreferences("utility", MODE_PRIVATE)
@@ -226,22 +215,33 @@ class UpdateActivity():Activity() {
 
         if (checkCustomServer) {
             rb_custom_server.isChecked = true
-            editText.setText(pref.getString("custom_server", UpdatePackage.remoteUrl),
+            edittext.setText(pref.getString("custom_server", UpdatePackage.remoteUrl),
                     TextView.BufferType.EDITABLE)
 
         } else {
             rb_mirror_server.isChecked = true
-            editText.setText(UpdatePackage.remoteUrl, TextView.BufferType.EDITABLE)
-            editText.isEnabled = false
+            edittext.setText(UpdatePackage.remoteUrl, TextView.BufferType.EDITABLE)
+            edittext.isEnabled = false
         }
+    }
+
+    private fun selectServer(server:String, edit:Boolean) {
+        checkCustomServer = edit
+        edittext.setText(server, TextView.BufferType.NORMAL)
+        edittext.isEnabled = edit
+
+        button_update_url.isEnabled = edit
+
+        ServerInfo.write(server)
+        UpdatePackage.remoteUrl =server
     }
 
     internal object ServerInfo {
         private var file: File? = null
-        private val FILENAME = "server.cfg"
+        private const val FILENAME = "server.cfg"
 
         init {
-            file = File((this as Context).getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+            file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
                     FILENAME)
 
             if (!file!!.exists()) {
@@ -251,41 +251,39 @@ class UpdateActivity():Activity() {
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-
             }
         }
 
         fun read(): String? {
             var text: String? = null
 
-            try {
-                val br = BufferedReader(FileReader(file!!))
-                text = br.readLine()
+            val br = file?.bufferedReader()
+            if (br != null) {
+                br.use {
+                    text = it.readLine()
+                }
                 br.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
             }
 
             return text
         }
 
         fun write(url: String) {
-            try {
-                val fw = FileWriter(file!!.absoluteFile)
-                val bw = BufferedWriter(fw)
-                bw.write(url)
-                bw.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
+            val fw = FileWriter(file!!.absoluteFile)
+            val bw = BufferedWriter(fw)
+            bw.use {
+                it.write(url)
+                it.close()
             }
-
+            bw.write(url)
+            bw.close()
         }
     }
 
     /*
      * Request to retrive the latest update package version
      */
-    fun checkLatestVersion() {
+    private fun checkLatestVersion(context: Context) {
         val remote = UpdatePackage.remoteUrl
 
         /* Remove if the same file is exist */
@@ -297,27 +295,27 @@ class UpdateActivity():Activity() {
                     Uri.parse(remote + LATEST_VERSION))
             request.setVisibleInDownloadsUi(false)
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-            request.setDestinationInExternalFilesDir(this,
+            request.setDestinationInExternalFilesDir(context,
                     Environment.DIRECTORY_DOWNLOADS,
                     LATEST_VERSION)
 
             enqueue = downloadManager!!.enqueue(request)
         } catch (e: IllegalArgumentException) {
-            Toast.makeText(this,
+            Toast.makeText(context,
                     "URL must be HTTP/HTTPS forms.",
                     Toast.LENGTH_SHORT).show()
         }
 
     }
 
-    fun updatePckageFromOnline() {
-        AlertDialog.Builder(this)
+    fun updatePckageFromOnline(context:Context) {
+        AlertDialog.Builder(context)
                 .setTitle("New update package is found!")
                 .setMessage("Do you want to download new update package?\n" + "It would take a few minutes or hours depends on your network speed.")
                 .setPositiveButton("Download"
-                ) { _, whichButton ->
+                ) { _, _ ->
                     if (sufficientSpace()) {
-                        enqueue = m_updatePackage!!.requestDownload(this,
+                        enqueue = updatePackage!!.requestDownload(context,
                                 downloadManager!!)
                     }
                 }
@@ -325,7 +323,7 @@ class UpdateActivity():Activity() {
                 .create().show()
     }
 
-    fun updatePackageFromStorage() {
+    private fun updatePackageFromStorage() {
         val intent = Intent()
         intent.action = Intent.ACTION_GET_CONTENT
 
@@ -353,13 +351,13 @@ class UpdateActivity():Activity() {
             AlertDialog.Builder(this)
                     .setTitle("Selected package file is verified")
                     .setMessage("Your Android can be updated, do you want to proceed?")
-                    .setPositiveButton("Proceed") { dialog, whichButton ->
+                    .setPositiveButton("Proceed") { _, _ ->
                         try {
                             RecoverySystem.installPackage(this,
                                     packageFile)
                         } catch (e: Exception) {
                             Toast.makeText(this,
-                                    "Error while install OTA package: " + e,
+                                    "Error while install OTA package: $e",
                                     Toast.LENGTH_LONG).show()
                         }
                     }
@@ -375,7 +373,7 @@ class UpdateActivity():Activity() {
     private fun sufficientSpace(): Boolean {
         val stat = StatFs(UpdatePackage.getDownloadDir(this)!!.path)
 
-        val available = stat.availableBlocks.toDouble() * stat.blockSize.toDouble()
+        val available = stat.availableBlocksLong.toDouble() * stat.blockSizeLong.toDouble()
 
         if (available < UpdatePackage.PACKAGE_MAXSIZE) {
             AlertDialog.Builder(this)
