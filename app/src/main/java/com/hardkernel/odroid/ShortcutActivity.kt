@@ -20,6 +20,7 @@ class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.shortcut_activity)
 
         val pref = getSharedPreferences("utility", MODE_PRIVATE)
 

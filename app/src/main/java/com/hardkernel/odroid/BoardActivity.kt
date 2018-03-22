@@ -10,6 +10,7 @@ class BoardActivity:Activity() {
     @SuppressLint("ApplySharedPref")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.board_activity)
 
         cb_kodi.setOnCheckedChangeListener { _, isChecked ->
             val pref = getSharedPreferences("utility", MODE_PRIVATE)

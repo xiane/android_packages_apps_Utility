@@ -18,6 +18,8 @@ class CpuActivity:Activity(), AdapterView.OnItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.cpu_activity)
+
         cpu = CPU.getCPU(tag, Cluster.Big)
 
         setGovernorUI(cpu, spinner_big_governors)

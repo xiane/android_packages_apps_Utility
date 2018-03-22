@@ -13,6 +13,7 @@ class RotateActivity:Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.rotation_activity)
 
         val display = windowManager.defaultDisplay
         degree = display.rotation * 90
