@@ -241,8 +241,7 @@ class UpdateActivity:Activity() {
         private const val FILENAME = "server.cfg"
 
         init {
-            file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                    FILENAME)
+            file = File(UpdatePackage.getDownloadDir(context), FILENAME)
 
             if (!file!!.exists()) {
                 try {
@@ -295,15 +294,9 @@ class UpdateActivity:Activity() {
     }
 
     private fun updatePackageFromStorage() {
-        val intent = Intent()
-        intent.action = Intent.ACTION_GET_CONTENT
-
-        intent.type = "application/zip"
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-
         try {
             startActivityForResult(
-                    Intent.createChooser(intent, "Select a File to Update"),
+                    Intent.createChooser(finderIntent, "Select a File to Update"),
                     FILE_SELECT_CODE)
         } catch (ex: android.content.ActivityNotFoundException) {
             // Potentially direct the user to the Market with a Dialog
@@ -311,8 +304,17 @@ class UpdateActivity:Activity() {
         }
     }
 
+    private val finderIntent:Intent
+        get() {
+            val intent = Intent()
+            intent.action = Intent.ACTION_GET_CONTENT
+            intent.type = "application/zip"
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            return intent
+        }
+
     private fun installPackage(packageFile: File) {
-        Log.e(tag, "installPackage = " + packageFile.path)
+        Log.e(tag, "installPackage = ${packageFile.path}")
         try {
             RecoverySystem.verifyPackage(packageFile, null, null)
 
@@ -335,11 +337,7 @@ class UpdateActivity:Activity() {
     }
 
     private fun sufficientSpace(): Boolean {
-        val stat = StatFs(UpdatePackage.getDownloadDir(context)!!.path)
-
-        val available = stat.availableBlocksLong.toDouble() * stat.blockSizeLong.toDouble()
-
-        if (available < UpdatePackage.PACKAGE_MAXSIZE) {
+        if (UpdatePackage.availableSpace(context) < UpdatePackage.PACKAGE_MAXSIZE) {
             AlertDialog.Builder(context)
                     .setTitle("Check free space")
                     .setMessage("Insufficient free space!\nAbout ${UpdatePackage.PACKAGE_MAXSIZE / 1024 / 1024} MBytes free space is required.")

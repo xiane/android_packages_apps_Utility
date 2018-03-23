@@ -6,6 +6,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.os.StatFs
 import android.util.Log
 
 internal class UpdatePackage(packageName: String) {
@@ -78,7 +79,7 @@ internal class UpdatePackage(packageName: String) {
         File(getDownloadDir(context), LATEST_VERSION).delete()
 
         val request = DownloadManager.Request(
-                Uri.parse( mRemoteUrl + LATEST_VERSION))
+                Uri.parse(mRemoteUrl + LATEST_VERSION))
         request.setVisibleInDownloadsUi(false)
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
         request.setDestinationInExternalFilesDir(context,
@@ -98,8 +99,13 @@ internal class UpdatePackage(packageName: String) {
 
         private var mRemoteUrl = MIRROR_SERVER_URL
 
-        fun getDownloadDir(context: Context): File? {
+        fun getDownloadDir(context: Context): File {
             return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        }
+
+        fun availableSpace(context: Context):Long {
+            val state = StatFs(getDownloadDir(context).path)
+            return state.availableBlocksLong * state.blockSizeLong
         }
 
         var remoteUrl: String
