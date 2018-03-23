@@ -167,7 +167,7 @@ class UpdateActivity:Activity() {
 
         button_check_online_update.setOnClickListener {
             try {
-                enqueue = UpdatePackage.checkLatestVersion(context, downloadManager)
+                enqueue = updatePackage.checkLatestVersion(context, downloadManager)
             } catch (e:IllegalArgumentException) {
                 toastShortMessage("URL must be HTTP/HTTPS forms.")
             }

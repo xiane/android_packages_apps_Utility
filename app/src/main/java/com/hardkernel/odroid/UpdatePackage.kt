@@ -70,6 +70,24 @@ internal class UpdatePackage(packageName: String) {
         return downloadId
     }
 
+    /*
+     *  * Request to retrive the latest update package version
+     */
+    @Throws(IllegalArgumentException::class)
+    fun checkLatestVersion(context:Context, dm: DownloadManager): Long {
+        File(getDownloadDir(context), LATEST_VERSION).delete()
+
+        val request = DownloadManager.Request(
+                Uri.parse( mRemoteUrl + LATEST_VERSION))
+        request.setVisibleInDownloadsUi(false)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
+        request.setDestinationInExternalFilesDir(context,
+                Environment.DIRECTORY_DOWNLOADS,
+                LATEST_VERSION)
+
+        return dm.enqueue(request)
+    }
+
     companion object {
         private const val TAG = "UpdatePackage"
 
@@ -90,25 +108,6 @@ internal class UpdatePackage(packageName: String) {
         }
         get() {
             return mRemoteUrl
-        }
-
-        /*
-         *  * Request to retrive the latest update package version
-         */
-        @Throws(IllegalArgumentException::class)
-        fun checkLatestVersion(context:Context, dm: DownloadManager): Long {
-            File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                    LATEST_VERSION).delete()
-
-            val request = DownloadManager.Request(
-                    Uri.parse( mRemoteUrl + LATEST_VERSION))
-            request.setVisibleInDownloadsUi(false)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-            request.setDestinationInExternalFilesDir(context,
-                    Environment.DIRECTORY_DOWNLOADS,
-                    LATEST_VERSION)
-
-            return dm.enqueue(request)
         }
     }
 }
