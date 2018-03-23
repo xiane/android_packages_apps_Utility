@@ -18,13 +18,12 @@ import java.io.*
 @SuppressLint("Registered")
 class UpdateActivity:Activity() {
     private val tag = "ODROIDUtility"
-    private var downloadManager: DownloadManager? = null
+    private lateinit var downloadManager:DownloadManager
     private var enqueue: Long = 0
-    private var updatePackage: UpdatePackage? = null
+    private lateinit var updatePackage: UpdatePackage
 
     companion object {
         private var checkCustomServer = false
-        private const val LATEST_VERSION = "latestupdate_nougat"
         private const val FILE_SELECT_CODE = 0
         @SuppressLint("StaticFieldLeak")
         private lateinit var context:Context
@@ -69,7 +68,6 @@ class UpdateActivity:Activity() {
         private fun isDownloadsDocument(uri: Uri?): Boolean {
             return "com.android.providers.downloads.documents" == uri!!.authority
         }
-
     }
 
     private val mReceiver = object : BroadcastReceiver() {
@@ -82,7 +80,7 @@ class UpdateActivity:Activity() {
 
             val query = DownloadManager.Query()
             query.setFilterById(id)
-            val cursor = downloadManager!!.query(query)
+            val cursor = downloadManager.query(query)
 
             if (!cursor.moveToFirst()) {
                 Log.e(tag, "Not able to move the cursor for downloaded content.")
@@ -90,13 +88,15 @@ class UpdateActivity:Activity() {
             }
 
             val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-            if (DownloadManager.ERROR_INSUFFICIENT_SPACE == status) {
-                Log.e(tag, "Download is failed due to insufficient space")
-                return
-            }
-            if (DownloadManager.STATUS_SUCCESSFUL != status) {
-                Log.e(tag, "Download Failed")
-                return
+            when {
+                DownloadManager.ERROR_INSUFFICIENT_SPACE == status -> {
+                    Log.e(tag, "Download is failed due to insufficient space")
+                    return
+                }
+                DownloadManager.STATUS_SUCCESSFUL != status -> {
+                    Log.e(tag, "Download Failed")
+                    return
+                }
             }
 
             /* Get URI of downloaded file */
@@ -111,11 +111,11 @@ class UpdateActivity:Activity() {
                 return
             }
 
-            if (file.name == LATEST_VERSION) {
+            if (file.name == UpdatePackage.LATEST_VERSION) {
                 try {
                     val text = StringBuilder()
 
-                    val br = BufferedReader(FileReader(file))
+                    val br = file.bufferedReader()
                     text.append(br.readLine())
                     br.close()
 
@@ -131,9 +131,9 @@ class UpdateActivity:Activity() {
                         currentVersion = Integer.parseInt(version[3])
                     }
 
-                    if (currentVersion < updatePackage!!.buildNumber) updatePckageFromOnline(context)
+                    if (currentVersion < updatePackage.buildNumber) updatePckageFromOnline(context)
                     else {
-                        if (currentVersion > updatePackage!!.buildNumber) Toast.makeText(context,
+                        if (currentVersion > updatePackage.buildNumber) Toast.makeText(context,
                                 "The current installed build number might be wrong",
                                 Toast.LENGTH_LONG).show()
                         else Toast.makeText(context,
@@ -145,9 +145,9 @@ class UpdateActivity:Activity() {
                     e.printStackTrace()
                 }
 
-            } else if (id == updatePackage!!.downloadId) {
+            } else if (id == updatePackage.downloadId) {
                 /* Update package download is done, time to install */
-                installPackage(File(updatePackage!!.localUri(context).path))
+                installPackage(File(updatePackage.localUri(context).path))
             }
         }
     }
@@ -169,8 +169,15 @@ class UpdateActivity:Activity() {
         registerReceiver(mReceiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        button_check_online_update.setOnClickListener { checkLatestVersion(this) }
-
+        button_check_online_update.setOnClickListener {
+            try {
+                enqueue = UpdatePackage.checkLatestVersion(context, downloadManager)
+            } catch (e:IllegalArgumentException) {
+                Toast.makeText(context,
+                        "URL must be HTTP/HTTPS forms.",
+                        Toast.LENGTH_SHORT).show()
+            }
+        }
         button_package_install_from_storage.setOnClickListener { updatePackageFromStorage() }
 
         rb_offical_server.setOnClickListener {
@@ -233,7 +240,7 @@ class UpdateActivity:Activity() {
         button_update_url.isEnabled = edit
 
         ServerInfo.write(server)
-        UpdatePackage.remoteUrl =server
+        UpdatePackage.remoteUrl = server
     }
 
     internal object ServerInfo {
@@ -264,7 +271,6 @@ class UpdateActivity:Activity() {
                 }
                 br.close()
             }
-
             return text
         }
 
@@ -280,34 +286,6 @@ class UpdateActivity:Activity() {
         }
     }
 
-    /*
-     * Request to retrive the latest update package version
-     */
-    private fun checkLatestVersion(context: Context) {
-        val remote = UpdatePackage.remoteUrl
-
-        /* Remove if the same file is exist */
-        File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                LATEST_VERSION).delete()
-
-        try {
-            val request = DownloadManager.Request(
-                    Uri.parse(remote + LATEST_VERSION))
-            request.setVisibleInDownloadsUi(false)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-            request.setDestinationInExternalFilesDir(context,
-                    Environment.DIRECTORY_DOWNLOADS,
-                    LATEST_VERSION)
-
-            enqueue = downloadManager!!.enqueue(request)
-        } catch (e: IllegalArgumentException) {
-            Toast.makeText(context,
-                    "URL must be HTTP/HTTPS forms.",
-                    Toast.LENGTH_SHORT).show()
-        }
-
-    }
-
     fun updatePckageFromOnline(context:Context) {
         AlertDialog.Builder(context)
                 .setTitle("New update package is found!")
@@ -315,8 +293,8 @@ class UpdateActivity:Activity() {
                 .setPositiveButton("Download"
                 ) { _, _ ->
                     if (sufficientSpace()) {
-                        enqueue = updatePackage!!.requestDownload(context,
-                                downloadManager!!)
+                        enqueue = updatePackage.requestDownload(context,
+                                downloadManager)
                     }
                 }
                 .setCancelable(true)
@@ -336,11 +314,10 @@ class UpdateActivity:Activity() {
                     FILE_SELECT_CODE)
         } catch (ex: android.content.ActivityNotFoundException) {
             // Potentially direct the user to the Market with a Dialog
-            Toast.makeText(this,
+            Toast.makeText(context,
                     "Please install a File Manager.",
                     Toast.LENGTH_SHORT).show()
         }
-
     }
 
     private fun installPackage(packageFile: File) {
@@ -348,15 +325,15 @@ class UpdateActivity:Activity() {
         try {
             RecoverySystem.verifyPackage(packageFile, null, null)
 
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(context)
                     .setTitle("Selected package file is verified")
                     .setMessage("Your Android can be updated, do you want to proceed?")
                     .setPositiveButton("Proceed") { _, _ ->
                         try {
-                            RecoverySystem.installPackage(this,
+                            RecoverySystem.installPackage(context,
                                     packageFile)
                         } catch (e: Exception) {
-                            Toast.makeText(this,
+                            Toast.makeText(context,
                                     "Error while install OTA package: $e",
                                     Toast.LENGTH_LONG).show()
                         }
@@ -364,19 +341,19 @@ class UpdateActivity:Activity() {
                     .setCancelable(true)
                     .create().show()
         } catch (e: Exception) {
-            Toast.makeText(this,
+            Toast.makeText(context,
                     "The package file seems to be corrupted!!\n" + "Please select another package file...",
                     Toast.LENGTH_LONG).show()
         }
     }
 
     private fun sufficientSpace(): Boolean {
-        val stat = StatFs(UpdatePackage.getDownloadDir(this)!!.path)
+        val stat = StatFs(UpdatePackage.getDownloadDir(context)!!.path)
 
         val available = stat.availableBlocksLong.toDouble() * stat.blockSizeLong.toDouble()
 
         if (available < UpdatePackage.PACKAGE_MAXSIZE) {
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(context)
                     .setTitle("Check free space")
                     .setMessage("Insufficient free space!\nAbout ${UpdatePackage.PACKAGE_MAXSIZE / 1024 / 1024} MBytes free space is required.")
                     .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
@@ -385,7 +362,6 @@ class UpdateActivity:Activity() {
 
             return false
         }
-
         return true
     }
 
@@ -394,7 +370,7 @@ class UpdateActivity:Activity() {
             FILE_SELECT_CODE -> if (resultCode == Activity.RESULT_OK) {
                 // Get the Uri of the selected file
                 val uri = data.data
-                val path = getPath(this, uri) ?: return
+                val path = getPath(context, uri) ?: return
                 installPackage(File(path))
             }
         }

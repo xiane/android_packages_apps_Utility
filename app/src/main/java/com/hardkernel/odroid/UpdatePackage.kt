@@ -73,6 +73,7 @@ internal class UpdatePackage(packageName: String) {
     companion object {
         private const val TAG = "UpdatePackage"
 
+        const val LATEST_VERSION = "latestupdate_nougat"
         const val PACKAGE_MAXSIZE = (500 * 1024 * 1024).toLong()   /* 500MB */
         const val OFFICAL_SERVER_URL = "https://dn.odroid.com/RK3399/Android/ODROID-N1/"
         const val MIRROR_SERVER_URL = "https://www.odroid.in/mirror/dn.odroid.com/RK3399/Android/ODROID-N1/"
@@ -89,6 +90,25 @@ internal class UpdatePackage(packageName: String) {
         }
         get() {
             return mRemoteUrl
+        }
+
+        /*
+         *  * Request to retrive the latest update package version
+         */
+        @Throws(IllegalArgumentException::class)
+        fun checkLatestVersion(context:Context, dm: DownloadManager): Long {
+            File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                    LATEST_VERSION).delete()
+
+            val request = DownloadManager.Request(
+                    Uri.parse( mRemoteUrl + LATEST_VERSION))
+            request.setVisibleInDownloadsUi(false)
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
+            request.setDestinationInExternalFilesDir(context,
+                    Environment.DIRECTORY_DOWNLOADS,
+                    LATEST_VERSION)
+
+            return dm.enqueue(request)
         }
     }
 }
