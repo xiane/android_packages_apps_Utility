@@ -107,7 +107,7 @@ class UpdateActivity:Activity() {
 
             val file = File(uri.path)
             if (!file.exists()) {
-                Log.e(tag, "Not able to find downloaded file: " + uri.path)
+                Log.e(tag, "Not able to find downloaded file: ${uri.path}")
                 return
             }
 
@@ -124,21 +124,17 @@ class UpdateActivity:Activity() {
                     var currentVersion = 0
                     val version = Build.VERSION.INCREMENTAL.split("-".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
                     if (version.size < 4) {
-                        Toast.makeText(context,
-                                "Not able to detect the version number installed. " + "Remote package will be installed anyway!",
-                                Toast.LENGTH_LONG).show()
+                        toastLongMessage("Not able to detect the version number installed. " + "Remote package will be installed anyway!")
                     } else {
                         currentVersion = Integer.parseInt(version[3])
                     }
 
-                    if (currentVersion < updatePackage.buildNumber) updatePckageFromOnline(context)
-                    else {
-                        if (currentVersion > updatePackage.buildNumber) Toast.makeText(context,
-                                "The current installed build number might be wrong",
-                                Toast.LENGTH_LONG).show()
-                        else Toast.makeText(context,
-                                "Already latest Android image is installed.",
-                                Toast.LENGTH_LONG).show()
+                    when {
+                        currentVersion < updatePackage.buildNumber -> updatePckageFromOnline(context)
+                        currentVersion == updatePackage.buildNumber ->
+                            toastLongMessage("The current installed build number might be wrong")
+                        currentVersion > updatePackage.buildNumber ->
+                                toastLongMessage("Already latest Android image is installed.")
                     }
                 } catch (e: IOException) {
                     Log.d(tag, e.toString())
@@ -173,9 +169,7 @@ class UpdateActivity:Activity() {
             try {
                 enqueue = UpdatePackage.checkLatestVersion(context, downloadManager)
             } catch (e:IllegalArgumentException) {
-                Toast.makeText(context,
-                        "URL must be HTTP/HTTPS forms.",
-                        Toast.LENGTH_SHORT).show()
+                toastShortMessage("URL must be HTTP/HTTPS forms.")
             }
         }
         button_package_install_from_storage.setOnClickListener { updatePackageFromStorage() }
@@ -224,7 +218,6 @@ class UpdateActivity:Activity() {
             rb_custom_server.isChecked = true
             edittext.setText(pref.getString("custom_server", UpdatePackage.remoteUrl),
                     TextView.BufferType.EDITABLE)
-
         } else {
             rb_mirror_server.isChecked = true
             edittext.setText(UpdatePackage.remoteUrl, TextView.BufferType.EDITABLE)
@@ -314,9 +307,7 @@ class UpdateActivity:Activity() {
                     FILE_SELECT_CODE)
         } catch (ex: android.content.ActivityNotFoundException) {
             // Potentially direct the user to the Market with a Dialog
-            Toast.makeText(context,
-                    "Please install a File Manager.",
-                    Toast.LENGTH_SHORT).show()
+            toastShortMessage("Please install a File Manager.")
         }
     }
 
@@ -333,17 +324,13 @@ class UpdateActivity:Activity() {
                             RecoverySystem.installPackage(context,
                                     packageFile)
                         } catch (e: Exception) {
-                            Toast.makeText(context,
-                                    "Error while install OTA package: $e",
-                                    Toast.LENGTH_LONG).show()
+                            toastLongMessage("Error while install OTA package: $e")
                         }
                     }
                     .setCancelable(true)
                     .create().show()
         } catch (e: Exception) {
-            Toast.makeText(context,
-                    "The package file seems to be corrupted!!\n" + "Please select another package file...",
-                    Toast.LENGTH_LONG).show()
+            toastLongMessage("The package file seems to be corrupted!!\n" + "Please select another package file...")
         }
     }
 
@@ -364,6 +351,10 @@ class UpdateActivity:Activity() {
         }
         return true
     }
+
+    private fun toastLongMessage(text: String) { toastMessage(text, Toast.LENGTH_LONG) }
+    private fun toastShortMessage(text: String) { toastMessage(text, Toast.LENGTH_SHORT) }
+    private fun toastMessage(text: String, period:Int) { Toast.makeText(this, text, period).show() }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         when (requestCode) {
