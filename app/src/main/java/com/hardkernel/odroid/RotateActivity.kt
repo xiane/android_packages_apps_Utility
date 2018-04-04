@@ -16,7 +16,7 @@ class RotateActivity:Activity() {
         setContentView(R.layout.rotation_activity)
 
         val display = windowManager.defaultDisplay
-        degree = display.rotation * 90
+        degree = display.rotation
 
         when (degree) {
             0 -> {
@@ -28,7 +28,7 @@ class RotateActivity:Activity() {
                 radioGroup_degree.visibility = View.VISIBLE
 
                 when (degree) {
-                    90 -> {
+                    1 -> {
                         radio_90.isChecked = true
                         radio_270.isChecked = false
 
@@ -43,7 +43,7 @@ class RotateActivity:Activity() {
 
         radio_portrait.setOnClickListener {_ ->
             radioGroup_degree.visibility = View.VISIBLE
-            degree = 270
+            degree = 3
             radio_90.isChecked = false
             radio_270.isChecked = true
         }
@@ -53,25 +53,13 @@ class RotateActivity:Activity() {
             degree = 0
         }
 
-        radio_90.setOnClickListener {_ -> degree = 90 }
+        radio_90.setOnClickListener {_ -> degree = 1 }
 
-        radio_270.setOnClickListener {_ -> degree = 270 }
+        radio_270.setOnClickListener {_ -> degree = 3 }
 
         button_rotation_apply.setOnClickListener {_ ->
-            when (degree) {
-                0 -> {
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 0)
-                }
-                90 -> {
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 1)
-                }
-                270 -> {
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
-                    android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, 3)
-                }
-            }
+            android.provider.Settings.System.putInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0)
+            android.provider.Settings.System.putInt(contentResolver, Settings.System.USER_ROTATION, degree)
         }
     }
 
