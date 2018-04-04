@@ -28,7 +28,7 @@ class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
         val pkgF7 = pref.getString("shortcut_f7", null)
         val pkgF8 = pref.getString("shortcut_f8", null)
         val pkgF9 = pref.getString("shortcut_f9", null)
-        val pkfF10 = pref.getString("shortcut_f10", null)
+        val pkgF10 = pref.getString("shortcut_f10", null)
 
         val appTitles = ArrayList<String>()
 
@@ -48,7 +48,7 @@ class ShortcutActivity:Activity(), AdapterView.OnItemSelectedListener {
         shortcut_f7.setSelection(appTitles.indexOf(pkgF7))
         shortcut_f8.setSelection(appTitles.indexOf(pkgF8))
         shortcut_f9.setSelection(appTitles.indexOf(pkgF9))
-        shortcut_f10.setSelection(appTitles.indexOf(pkfF10))
+        shortcut_f10.setSelection(appTitles.indexOf(pkgF10))
 
         shortcut_f7.onItemSelectedListener = this
         shortcut_f8.onItemSelectedListener = this
