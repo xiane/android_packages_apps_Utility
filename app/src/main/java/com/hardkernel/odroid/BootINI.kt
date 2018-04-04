@@ -8,7 +8,7 @@ import java.util.ArrayList
 class BootINI {
     companion object {
         private const val tag = "ODROIDUtility"
-        private const val bootINI = "/storage/internal/boot.ini"
+        private const val bootINI = "/internal/boot.ini"
         private lateinit var params:MutableMap<String, String>
 
         fun get(option:String): String? {
