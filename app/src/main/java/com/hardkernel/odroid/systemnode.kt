@@ -29,27 +29,27 @@ object SystemNode {
     /* little Cluster */
     const val littleGovernor = "$cpuRoot/$little/$governors"
     const val littleAvailableGovernors = "$cpuRoot/$little/$current_gov"
+}
 
-    fun get(node:String): String? {
-        return try {
-            val reader = BufferedReader(FileReader(node))
-            val value = reader.readLine()
-            reader.close()
-            value
-        } catch (e:Exception) {
-            e.printStackTrace()
-            null
-        }
+fun String.read():String? {
+    return try {
+        val reader = BufferedReader(FileReader(this))
+        val value = reader.readLine()
+        reader.close()
+        value
+    } catch (e:Exception) {
+        e.printStackTrace()
+        null
     }
+}
 
-    fun set(node:String, value:String) {
-        try {
-            val writer = BufferedWriter(FileWriter(node))
-            writer.write(value)
-            writer.newLine()
-            writer.close()
-        } catch (e:Exception) {
-            e.printStackTrace()
-        }
+fun String.write(value:String) {
+    try {
+        val writer = BufferedWriter(FileWriter(this))
+        writer.write(value)
+        writer.newLine()
+        writer.close()
+    } catch (e:Exception) {
+        e.printStackTrace()
     }
 }

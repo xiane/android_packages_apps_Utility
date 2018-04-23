@@ -13,8 +13,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
     val current: String?
         get() {
             val governor: String? = when (cluster) {
-                Cluster.Big -> SystemNode.get(SystemNode.bigGovernor)
-                Cluster.Little -> SystemNode.get(SystemNode.littleGovernor)
+                Cluster.Big -> SystemNode.bigGovernor.read()
+                Cluster.Little -> SystemNode.littleGovernor.read()
             }
             Log.e(TAG, "current governor : $governor")
             return governor
@@ -23,8 +23,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
     private val scalingAvailables: String?
         get() {
             val availableGovernors: String? = when (cluster) {
-                Cluster.Big -> SystemNode.get(SystemNode.bigAvailableGovernors)
-                Cluster.Little -> SystemNode.get(SystemNode.littleAvailableGovernors)
+                Cluster.Big -> SystemNode.bigAvailableGovernors.read()
+                Cluster.Little -> SystemNode.littleAvailableGovernors.read()
             }
             Log.e(TAG, "Current available governors : $availableGovernors")
             return availableGovernors
@@ -32,8 +32,8 @@ class Governor(private val TAG: String, private val cluster: Cluster) {
 
     fun set(governor: String) {
         when (cluster) {
-            Cluster.Big -> SystemNode.set(SystemNode.bigGovernor, governor)
-            Cluster.Little -> SystemNode.set(SystemNode.littleGovernor, governor)
+            Cluster.Big -> SystemNode.bigGovernor.write(governor)
+            Cluster.Little -> SystemNode.littleGovernor.write(governor)
         }
         Log.e(TAG, "set governor : $governor")
     }
